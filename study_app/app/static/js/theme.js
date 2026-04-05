@@ -111,4 +111,8 @@
 
   // On page load: apply persisted theme before rendering
   loadThemeFromStorage();
+
+  // Expose internals needed by profile page
+  window.applyThemeMode = applyThemeMode;
+  window.persistTheme   = persistTheme;
 })();

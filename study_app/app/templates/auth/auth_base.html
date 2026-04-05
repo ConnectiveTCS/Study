@@ -11,6 +11,14 @@
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}" />
+  <style id="theme-vars">
+    :root {
+      --primary: {{ theme.primary }};
+      --accent:  {{ theme.accent }};
+      --bg:      {{ theme.background }};
+      --grad-1:  {{ theme.primary }};
+    }
+  </style>
   <style>
     .auth-page {
       min-height: 100vh;
@@ -75,6 +83,7 @@
     {% endif %}
   {% endwith %}
 
+  <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
   <script>lucide.createIcons();</script>
   {% block extra_js %}{% endblock %}
