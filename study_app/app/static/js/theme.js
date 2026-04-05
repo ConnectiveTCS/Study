@@ -114,5 +114,5 @@
 
   // Expose internals needed by profile page
   window.applyThemeMode = applyThemeMode;
-  window.persistTheme   = persistTheme;
+  window.persistTheme = persistTheme;
 })();
