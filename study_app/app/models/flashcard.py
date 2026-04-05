@@ -24,11 +24,16 @@ class Deck(db.Model):
 
     @property
     def due_count(self) -> int:
-        """Cards due for review today (for the owner)."""
-        return SM2Review.query.join(Card).filter(
+        """Cards due for review today: new cards (no review row) + cards whose next_review_date <= today."""
+        reviewed_ids = db.session.query(SM2Review.card_id).join(Card).filter(
+            Card.deck_id == self.id,
+        ).subquery()
+        new_cards = self.cards.filter(Card.id.notin_(reviewed_ids)).count()
+        due_cards = SM2Review.query.join(Card).filter(
             Card.deck_id == self.id,
             SM2Review.next_review_date <= date.today(),
         ).count()
+        return new_cards + due_cards
 
     def __repr__(self) -> str:
         return f"<Deck {self.title}>"

@@ -35,7 +35,9 @@
     <div style="display:flex; gap:0.5rem;">
       <a href="{{ url_for('flashcards.deck_detail', deck_id=deck.id) }}" class="btn btn-glass btn-sm" style="flex:1; text-align:center;">View</a>
       {% if deck.due_count > 0 %}
-      <a href="{{ url_for('flashcards.study', deck_id=deck.id) }}" class="btn btn-primary btn-sm" style="flex:1; text-align:center;">Study →</a>
+      <a href="{{ url_for('flashcards.study', deck_id=deck.id) }}" class="btn btn-primary btn-sm" style="flex:1; text-align:center;">Study ({{ deck.due_count }}) →</a>
+      {% elif deck.card_count > 0 %}
+      <a href="{{ url_for('flashcards.study_all', deck_id=deck.id) }}" class="btn btn-primary btn-sm" style="flex:1; text-align:center;">Study All →</a>
       {% endif %}
     </div>
   </div>

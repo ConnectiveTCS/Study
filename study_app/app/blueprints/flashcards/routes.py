@@ -164,6 +164,25 @@ def study(deck_id):
     return render_template("flashcards/study.html", deck=deck, cards_json=json.dumps(cards_data))
 
 
+# ── Study all cards (ignore SRS schedule) ─────────────────────────────────
+
+@flashcards_bp.route("/<int:deck_id>/study-all")
+def study_all(deck_id):
+    from ...models.flashcard import Deck, Card, SM2Review
+    deck = _get_deck_or_404(deck_id)
+    cards_data = []
+    for card in Card.query.filter_by(deck_id=deck.id).all():
+        review = SM2Review.query.filter_by(card_id=card.id).first()
+        cards_data.append({
+            "id": card.id,
+            "front": card.front,
+            "back": card.back,
+            "interval": review.interval if review else 0,
+            "ease_factor": review.easiness_factor if review else 2.5,
+        })
+    return render_template("flashcards/study.html", deck=deck, cards_json=json.dumps(cards_data))
+
+
 # ── Study-next (entry point from dashboard) ───────────────────────────────
 
 @flashcards_bp.route("/study-next")
