@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Mind Maps – StudyForce{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🧠 Mind Maps</h1>
+  <button class="btn btn-primary" onclick="document.getElementById('new-modal').classList.add('open')">+ New map</button>
+</div>
+
+{% if maps %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:0.85rem;">
+  {% for m in maps %}
+  <div class="glass p-3">
+    <div style="font-size:2rem; margin-bottom:0.4rem;">🧠</div>
+    <div style="font-weight:600; margin-bottom:0.2rem;">{{ m.title }}</div>
+    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">
+      {% if m.subject %}{{ m.subject.icon }} {{ m.subject.name }}{% else %}No subject{% endif %}
+    </div>
+    <div style="display:flex; gap:0.4rem;">
+      <a href="{{ url_for('mindmaps.editor', map_id=m.id) }}" class="btn btn-primary btn-sm">Open</a>
+      <form method="POST" action="{{ url_for('mindmaps.delete_map', map_id=m.id) }}" onsubmit="return confirm('Delete this mind map?')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit" class="btn btn-glass btn-sm" style="color:var(--danger);">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="glass p-4" style="text-align:center;">
+  <div style="font-size:3rem; margin-bottom:0.5rem;">🧠</div>
+  <p>No mind maps yet. Create your first one.</p>
+  <button class="btn btn-primary" style="margin-top:0.5rem;" onclick="document.getElementById('new-modal').classList.add('open')">New Mind Map</button>
+</div>
+{% endif %}
+
+<!-- New map modal -->
+<div id="new-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div class="glass p-4" style="min-width:300px; max-width:420px; width:100%;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 style="font-size:1.1rem; font-weight:600;">New Mind Map</h2>
+      <button class="btn btn-glass btn-sm" onclick="document.getElementById('new-modal').classList.remove('open')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('mindmaps.new_map') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input class="form-control" type="text" name="title" required maxlength="200" placeholder="e.g. Cell Biology" />
+      </div>
+      {% if subjects %}
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <select class="form-control" name="subject_id">
+          <option value="">— None —</option>
+          {% for s in subjects %}<option value="{{ s.id }}">{{ s.icon }} {{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary" style="width:100%;">Create</button>
+    </form>
+  </div>
+</div>
+
+<style>
+  #new-modal.open { display:flex; }
+  #new-modal { align-items:center; justify-content:center; }
+</style>
+{% endblock %}

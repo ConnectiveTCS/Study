@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}{{ pdf.original_filename }} – StudyForce{% endblock %}
+{% block extra_css %}
+<style>
+  #viewer-container { display:grid; grid-template-columns:1fr 300px; gap:1rem; height:calc(100vh - 160px); }
+  #pdf-canvas-wrapper { overflow:auto; background:#1a1a2e; border-radius:12px; position:relative; }
+  #pdf-canvas { display:block; margin:auto; }
+  #sidebar { overflow-y:auto; }
+  .ann-item { border-left:3px solid var(--warning); padding:0.5rem 0.75rem; margin-bottom:0.5rem; font-size:0.82rem; cursor:pointer; border-radius:0 6px 6px 0; background:rgba(255,255,255,0.04); }
+  .ann-item:hover { background:rgba(255,255,255,0.08); }
+  #toolbar { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; }
+  #highlight-overlay { position:absolute; top:0; left:0; pointer-events:none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('pdfs.list_pdfs') }}" class="btn btn-glass">← PDFs</a>
+  <span style="font-weight:600; font-size:0.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ pdf.original_filename }}</span>
+</div>
+
+<div id="toolbar">
+  <button class="btn btn-glass btn-sm" onclick="changePage(-1)">‹ Prev</button>
+  <span style="font-size:0.85rem;">Page <span id="page-num">1</span> / <span id="page-count">?</span></span>
+  <button class="btn btn-glass btn-sm" onclick="changePage(1)">Next ›</button>
+  <button class="btn btn-glass btn-sm" onclick="changeZoom(-0.2)">－</button>
+  <span id="zoom-label" style="font-size:0.8rem;">100%</span>
+  <button class="btn btn-glass btn-sm" onclick="changeZoom(0.2)">＋</button>
+  <button class="btn btn-glass btn-sm" id="highlight-toggle" onclick="toggleHighlightMode()">🖊 Highlight</button>
+</div>
+
+<div id="viewer-container">
+  <div id="pdf-canvas-wrapper">
+    <canvas id="pdf-canvas"></canvas>
+    <canvas id="highlight-overlay"></canvas>
+  </div>
+
+  <div id="sidebar">
+    <div class="glass p-3" style="margin-bottom:0.75rem;">
+      <h2 style="font-size:0.9rem; font-weight:600; margin-bottom:0.5rem;">Highlights & Notes</h2>
+      <div id="ann-list"></div>
+      <p id="ann-empty" style="font-size:0.8rem; color:var(--text-muted);">No annotations yet. Enable Highlight mode and drag on the PDF.</p>
+    </div>
+    {% if pdf.extracted_text %}
+    <div class="glass p-3">
+      <h2 style="font-size:0.9rem; font-weight:600; margin-bottom:0.5rem;">Extracted Text</h2>
+      <pre style="font-size:0.75rem; white-space:pre-wrap; max-height:200px; overflow-y:auto; color:var(--text-muted);">{{ pdf.extracted_text[:2000] }}{% if pdf.extracted_text|length > 2000 %}…{% endif %}</pre>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Annotation note modal -->
+<div id="ann-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div class="glass p-4" style="min-width:300px; max-width:420px; width:100%;">
+    <h3 style="font-size:1rem; font-weight:600; margin-bottom:0.75rem;">Add note to highlight</h3>
+    <textarea id="ann-note-input" class="form-control" rows="3" placeholder="Optional note…" style="margin-bottom:0.75rem;"></textarea>
+    <div style="display:flex; gap:0.4rem; align-items:center; margin-bottom:0.75rem;">
+      <label class="form-label" style="margin:0;">Color:</label>
+      <input type="color" id="ann-color-input" value="#fbbf24" style="width:2.5rem; height:2rem; border:none; background:none; cursor:pointer;" />
+    </div>
+    <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+      <button class="btn btn-glass" onclick="cancelAnnotation()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAnnotation()">Save</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs" type="module"></script>
+<script type="module">
+import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+
+const PDF_URL = '/pdfs/{{ pdf.id }}/file';
+const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const PDF_ID = {{ pdf.id }};
+
+let pdfDoc = null, currentPage = 1, zoom = 1.0;
+let annotations = {{ annotations | tojson }};
+let highlightMode = false;
+let dragStart = null, pendingRect = null;
+
+const canvas = document.getElementById('pdf-canvas');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('highlight-overlay');
+const octx = overlay.getContext('2d');
+
+async function init() {
+  pdfDoc = await pdfjsLib.getDocument(PDF_URL).promise;
+  document.getElementById('page-count').textContent = pdfDoc.numPages;
+  await renderPage(currentPage);
+  renderAnnotationList();
+}
+
+async function renderPage(num) {
+  const page = await pdfDoc.getPage(num);
+  const viewport = page.getViewport({ scale: zoom });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  overlay.width = viewport.width;
+  overlay.height = viewport.height;
+  overlay.style.width = viewport.width + 'px';
+  overlay.style.height = viewport.height + 'px';
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  drawAnnotations();
+}
+
+function drawAnnotations() {
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  annotations.filter(a => a.page_num === currentPage).forEach(a => {
+    const r = a.rect;
+    octx.fillStyle = (a.color || '#fbbf24') + '66';
+    octx.fillRect(r.x * overlay.width, r.y * overlay.height, r.w * overlay.width, r.h * overlay.height);
+  });
+}
+
+window.changePage = async (d) => {
+  const n = currentPage + d;
+  if (n < 1 || n > (pdfDoc?.numPages || 1)) return;
+  currentPage = n;
+  document.getElementById('page-num').textContent = currentPage;
+  await renderPage(currentPage);
+};
+
+window.changeZoom = async (d) => {
+  zoom = Math.max(0.5, Math.min(3, zoom + d));
+  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+  await renderPage(currentPage);
+};
+
+window.toggleHighlightMode = () => {
+  highlightMode = !highlightMode;
+  const btn = document.getElementById('highlight-toggle');
+  btn.style.background = highlightMode ? 'var(--warning)' : '';
+  overlay.style.pointerEvents = highlightMode ? 'auto' : 'none';
+  overlay.style.cursor = highlightMode ? 'crosshair' : 'default';
+};
+
+overlay.addEventListener('mousedown', e => {
+  if (!highlightMode) return;
+  const rect = overlay.getBoundingClientRect();
+  dragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+});
+
+overlay.addEventListener('mouseup', e => {
+  if (!highlightMode || !dragStart) return;
+  const rect = overlay.getBoundingClientRect();
+  const x2 = e.clientX - rect.left, y2 = e.clientY - rect.top;
+  const x = Math.min(dragStart.x, x2) / overlay.width;
+  const y = Math.min(dragStart.y, y2) / overlay.height;
+  const w = Math.abs(x2 - dragStart.x) / overlay.width;
+  const h = Math.abs(y2 - dragStart.y) / overlay.height;
+  dragStart = null;
+  if (w < 0.01 || h < 0.005) return;
+  pendingRect = { x, y, w, h };
+  document.getElementById('ann-modal').style.display = 'flex';
+  document.getElementById('ann-note-input').value = '';
+  document.getElementById('ann-note-input').focus();
+});
+
+window.cancelAnnotation = () => {
+  pendingRect = null;
+  document.getElementById('ann-modal').style.display = 'none';
+};
+
+window.saveAnnotation = async () => {
+  if (!pendingRect) return;
+  const note = document.getElementById('ann-note-input').value.trim();
+  const color = document.getElementById('ann-color-input').value;
+  const resp = await fetch(`/pdfs/${PDF_ID}/annotations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ page_num: currentPage, rect: pendingRect, note_text: note, color })
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    annotations.push({ id: data.id, page_num: currentPage, rect: pendingRect, note_text: note, color });
+    drawAnnotations();
+    renderAnnotationList();
+  }
+  cancelAnnotation();
+};
+
+function renderAnnotationList() {
+  const list = document.getElementById('ann-list');
+  const empty = document.getElementById('ann-empty');
+  const pageAnns = annotations.filter(a => a.page_num === currentPage);
+  if (pageAnns.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = pageAnns.map(a => `
+    <div class="ann-item" style="border-left-color:${a.color || '#fbbf24'};">
+      <div>${a.note_text || '<em style="opacity:.5">No note</em>'}</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem; display:flex; justify-content:space-between;">
+        <span>Page ${a.page_num}</span>
+        <button onclick="deleteAnn(${a.id})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.75rem;">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+window.deleteAnn = async (id) => {
+  const resp = await fetch(`/pdfs/annotations/${id}`, { method: 'DELETE', headers: { 'X-CSRFToken': CSRF } });
+  const data = await resp.json();
+  if (data.ok) {
+    annotations = annotations.filter(a => a.id !== id);
+    drawAnnotations();
+    renderAnnotationList();
+  }
+};
+
+init();
+</script>
+{% endblock %}

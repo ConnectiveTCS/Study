@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}{{ map.title }} – Mind Map{% endblock %}
+{% block extra_css %}
+<style>
+  #cy-container { height:calc(100vh - 160px); border-radius:12px; overflow:hidden; background:rgba(0,0,0,0.3); cursor:grab; }
+  #cy-container:active { cursor:grabbing; }
+  #mm-toolbar { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; }
+  #node-panel { position:fixed; right:1rem; top:50%; transform:translateY(-50%); width:220px; z-index:100; display:none; }
+  #node-panel.open { display:block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('mindmaps.list_maps') }}" class="btn btn-glass">← Maps</a>
+  <h1 class="page-title" style="flex:1;">{{ map.title }}</h1>
+</div>
+
+<div id="mm-toolbar">
+  <button class="btn btn-glass btn-sm" onclick="addNode()">+ Node</button>
+  <button class="btn btn-glass btn-sm" id="connect-btn" onclick="toggleConnectMode()">⬡ Connect</button>
+  <button class="btn btn-glass btn-sm" onclick="cy.fit()">Fit view</button>
+  <button class="btn btn-glass btn-sm" onclick="cy.zoom(cy.zoom()*1.2)">＋</button>
+  <button class="btn btn-glass btn-sm" onclick="cy.zoom(cy.zoom()*0.8)">－</button>
+  <span id="status-msg" style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;"></span>
+</div>
+
+<div id="cy-container"></div>
+
+<!-- Node edit panel -->
+<div id="node-panel" class="glass p-3">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+    <span style="font-size:0.85rem; font-weight:600;">Edit node</span>
+    <button class="btn btn-glass btn-sm" onclick="closePanel()">✕</button>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Label</label>
+    <input id="node-label-input" class="form-control" type="text" maxlength="200" />
+  </div>
+  <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+    <label class="form-label" style="margin:0;">Color</label>
+    <input id="node-color-input" type="color" value="#7c3aed" style="width:2.5rem; height:2rem; border:none; background:none; cursor:pointer;" />
+  </div>
+  <div style="display:flex; gap:0.4rem;">
+    <button class="btn btn-primary btn-sm" onclick="applyNodeEdit()">Save</button>
+    <button class="btn btn-glass btn-sm" style="color:var(--danger);" onclick="deleteSelectedNode()">Delete</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+<script>
+const MAP_ID = {{ map.id }};
+const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+let connectMode = false, connectSource = null;
+let selectedNode = null;
+
+const cy = cytoscape({
+  container: document.getElementById('cy-container'),
+  elements: {{ elements_json | tojson }},
+  style: [
+    {
+      selector: 'node',
+      style: {
+        'background-color': 'data(color)',
+        'label': 'data(label)',
+        'color': '#fff',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'font-size': '13px',
+        'font-family': 'inherit',
+        'width': 'label',
+        'height': 'label',
+        'padding': '12px',
+        'border-width': '2px',
+        'border-color': 'rgba(255,255,255,0.3)',
+        'border-opacity': 0.6,
+        'shape': 'round-rectangle',
+        'text-wrap': 'wrap',
+        'text-max-width': '120px',
+        'cursor': 'pointer',
+        'shadow-blur': 10,
+        'shadow-color': 'rgba(0,0,0,0.3)',
+        'shadow-offset-x': 2,
+        'shadow-offset-y': 2,
+      }
+    },
+    {
+      selector: 'node:selected',
+      style: { 'border-color': '#fff', 'border-width': '3px' }
+    },
+    {
+      selector: 'edge',
+      style: {
+        'width': 2,
+        'line-color': 'rgba(255,255,255,0.3)',
+        'target-arrow-color': 'rgba(255,255,255,0.4)',
+        'target-arrow-shape': 'triangle',
+        'curve-style': 'bezier',
+        'label': 'data(label)',
+        'font-size': '11px',
+        'color': 'rgba(255,255,255,0.6)',
+      }
+    },
+    {
+      selector: '.connect-source',
+      style: { 'border-color': '#fbbf24', 'border-width': '3px' }
+    }
+  ],
+  layout: { name: 'preset' },
+  wheelSensitivity: 0.3
+});
+
+// Drag to reposition — save on drag end
+let saveTimer = null;
+cy.on('dragfree', 'node', (e) => {
+  const node = e.target;
+  const pos = node.position();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    fetch(`/mindmaps/${MAP_ID}/nodes/${node.id().slice(1)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ x: pos.x, y: pos.y })
+    });
+  }, 800);
+});
+
+// Click node
+cy.on('tap', 'node', (e) => {
+  const node = e.target;
+  if (connectMode) {
+    if (!connectSource) {
+      connectSource = node;
+      node.addClass('connect-source');
+      setStatus('Click target node to connect');
+    } else if (connectSource.id() !== node.id()) {
+      createEdge(connectSource, node);
+      connectSource.removeClass('connect-source');
+      connectSource = null;
+      setStatus('');
+    }
+    return;
+  }
+  openPanel(node);
+});
+
+cy.on('tap', (e) => {
+  if (e.target === cy) closePanel();
+});
+
+function openPanel(node) {
+  selectedNode = node;
+  document.getElementById('node-label-input').value = node.data('label');
+  document.getElementById('node-color-input').value = node.data('color') || '#7c3aed';
+  document.getElementById('node-panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('node-panel').classList.remove('open');
+  selectedNode = null;
+}
+
+window.applyNodeEdit = async () => {
+  if (!selectedNode) return;
+  const label = document.getElementById('node-label-input').value.trim() || 'Node';
+  const color = document.getElementById('node-color-input').value;
+  selectedNode.data('label', label);
+  selectedNode.data('color', color);
+  closePanel();
+  await fetch(`/mindmaps/${MAP_ID}/nodes/${selectedNode.id().slice(1)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ label, color })
+  });
+};
+
+window.deleteSelectedNode = async () => {
+  if (!selectedNode || !confirm('Delete this node?')) return;
+  const nodeId = selectedNode.id().slice(1);
+  cy.remove(selectedNode);
+  closePanel();
+  await fetch(`/mindmaps/${MAP_ID}/nodes/${nodeId}`, {
+    method: 'DELETE', headers: { 'X-CSRFToken': CSRF }
+  });
+};
+
+window.addNode = async () => {
+  const label = prompt('Node label:');
+  if (!label) return;
+  const center = cy.extent();
+  const x = (center.x1 + center.x2) / 2 + (Math.random() - 0.5) * 100;
+  const y = (center.y1 + center.y2) / 2 + (Math.random() - 0.5) * 100;
+  const resp = await fetch(`/mindmaps/${MAP_ID}/nodes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ label, x, y, color: '#6366f1' })
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    cy.add({ data: { id: data.cy_id, label, color: '#6366f1' }, position: { x, y } });
+  }
+};
+
+window.toggleConnectMode = () => {
+  connectMode = !connectMode;
+  const btn = document.getElementById('connect-btn');
+  btn.style.background = connectMode ? 'var(--primary)' : '';
+  if (!connectMode && connectSource) {
+    connectSource.removeClass('connect-source');
+    connectSource = null;
+  }
+  setStatus(connectMode ? 'Click source node' : '');
+};
+
+async function createEdge(src, tgt) {
+  const resp = await fetch(`/mindmaps/${MAP_ID}/edges`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ source: src.id(), target: tgt.id(), label: '' })
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    cy.add({ data: { id: data.cy_id, source: src.id(), target: tgt.id(), label: '' } });
+  }
+}
+
+function setStatus(msg) {
+  document.getElementById('status-msg').textContent = msg;
+}
+</script>
+{% endblock %}

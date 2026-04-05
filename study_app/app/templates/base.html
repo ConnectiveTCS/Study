@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme.mode }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="StudyForce — the smarter way to study for university." />
+  <title>{% block title %}StudyForce{% endblock %}</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+  <meta name="theme-color" content="{{ theme.primary }}" />
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}" />
+  {% block extra_css %}{% endblock %}
+
+  <!-- Inject theme CSS variables from user prefs -->
+  <style id="theme-vars">
+    :root {
+      --primary:    {{ theme.primary }};
+      --accent:     {{ theme.accent }};
+      --bg:         {{ theme.background }};
+      --grad-1:     {{ theme.primary }};
+    }
+  </style>
+</head>
+<body>
+
+<a href="#app-content" class="skip-link">Skip to main content</a>
+
+<!-- ==================== SIDEBAR ==================== -->
+{% if not request.endpoint or not request.endpoint.startswith('auth.') %}
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+  <!-- Logo -->
+  <div class="sidebar-logo" onclick="toggleSidebar()" title="Toggle sidebar" tabindex="0" role="button" aria-label="Toggle sidebar" onkeydown="if(event.key==='Enter')toggleSidebar()">
+    <span class="logo-icon" aria-hidden="true">🧠</span>
+    <span class="logo-text">StudyForce</span>
+  </div>
+
+  <!-- Study section -->
+  <span class="sidebar-section-label">Study</span>
+
+  <a href="{{ url_for('dashboard.index') }}"
+     class="sidebar-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"
+     data-tooltip="Dashboard"
+     aria-label="Dashboard"
+     aria-current="{% if request.endpoint == 'dashboard.index' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">🏠</span>
+    <span class="nav-label">Dashboard</span>
+  </a>
+
+  <a href="{{ url_for('flashcards.decks') }}"
+     class="sidebar-link {% if request.blueprint == 'flashcards' %}active{% endif %}"
+     data-tooltip="Flashcards"
+     aria-label="Flashcards"
+     aria-current="{% if request.blueprint == 'flashcards' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">🃏</span>
+    <span class="nav-label">Flashcards</span>
+  </a>
+
+  <a href="{{ url_for('quizzes.list') }}"
+     class="sidebar-link {% if request.blueprint == 'quizzes' %}active{% endif %}"
+     data-tooltip="Quizzes"
+     aria-label="Quizzes"
+     aria-current="{% if request.blueprint == 'quizzes' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">📝</span>
+    <span class="nav-label">Quizzes</span>
+  </a>
+
+  <a href="{{ url_for('notes.list') }}"
+     class="sidebar-link {% if request.blueprint == 'notes' %}active{% endif %}"
+     data-tooltip="Notes"
+     aria-label="Notes"
+     aria-current="{% if request.blueprint == 'notes' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">📓</span>
+    <span class="nav-label">Notes</span>
+  </a>
+
+  <!-- Organise section -->
+  <span class="sidebar-section-label">Organise</span>
+
+  <a href="{{ url_for('planner.index') }}"
+     class="sidebar-link {% if request.blueprint == 'planner' %}active{% endif %}"
+     data-tooltip="Planner"
+     aria-label="Planner"
+     aria-current="{% if request.blueprint == 'planner' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">📅</span>
+    <span class="nav-label">Planner</span>
+  </a>
+
+  <a href="{{ url_for('pomodoro.index') }}"
+     class="sidebar-link {% if request.blueprint == 'pomodoro' %}active{% endif %}"
+     data-tooltip="Pomodoro"
+     aria-label="Pomodoro"
+     aria-current="{% if request.blueprint == 'pomodoro' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">🍅</span>
+    <span class="nav-label">Pomodoro</span>
+  </a>
+
+  <a href="{{ url_for('mindmaps.list_maps') }}"
+     class="sidebar-link {% if request.blueprint == 'mindmaps' %}active{% endif %}"
+     data-tooltip="Mind Maps"
+     aria-label="Mind Maps"
+     aria-current="{% if request.blueprint == 'mindmaps' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">🗺️</span>
+    <span class="nav-label">Mind Maps</span>
+  </a>
+
+  <a href="{{ url_for('pdfs.list_pdfs') }}"
+     class="sidebar-link {% if request.blueprint == 'pdfs' %}active{% endif %}"
+     data-tooltip="PDFs"
+     aria-label="PDFs"
+     aria-current="{% if request.blueprint == 'pdfs' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">📄</span>
+    <span class="nav-label">PDFs</span>
+  </a>
+
+  <!-- Community section -->
+  <span class="sidebar-section-label">Community</span>
+
+  <a href="{{ url_for('groups.list_groups') }}"
+     class="sidebar-link {% if request.blueprint == 'groups' %}active{% endif %}"
+     data-tooltip="Study Groups"
+     aria-label="Study Groups"
+     aria-current="{% if request.blueprint == 'groups' %}page{% endif %}">
+    <span class="nav-icon" aria-hidden="true">👥</span>
+    <span class="nav-label">Study Groups</span>
+  </a>
+
+  <!-- Bottom: user + theme + notifications -->
+  <div class="sidebar-bottom">
+    <a href="{{ url_for('notifications.list_notifications') }}"
+       class="sidebar-link {% if request.blueprint == 'notifications' %}active{% endif %}"
+       data-tooltip="Notifications" aria-label="Notifications">
+      <span class="nav-icon" aria-hidden="true">🔔</span>
+      <span class="nav-label">
+        Notifications
+        {% if unread_notification_count > 0 %}
+          <span class="badge badge-primary" style="margin-left:0.4rem;">{{ unread_notification_count }}</span>
+        {% endif %}
+      </span>
+    </a>
+
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('auth.profile') }}" class="sidebar-user" data-tooltip="Profile">
+      <span class="user-avatar" aria-hidden="true">{{ current_user.avatar }}</span>
+      <div class="user-info">
+        <div class="user-name">{{ current_user.display_name }}</div>
+        <div class="user-xp">⭐ {{ current_user.total_xp }} XP</div>
+      </div>
+    </a>
+    <a href="{{ url_for('auth.logout') }}" class="sidebar-link" data-tooltip="Logout" aria-label="Logout">
+      <span class="nav-icon" aria-hidden="true">🚪</span>
+      <span class="nav-label">Logout</span>
+    </a>
+    {% else %}
+    <a href="{{ url_for('auth.login') }}" class="sidebar-link" data-tooltip="Sign in">
+      <span class="nav-icon" aria-hidden="true">🔑</span>
+      <span class="nav-label">Sign In</span>
+    </a>
+    {% endif %}
+
+    <!-- Theme toggle -->
+    <button class="sidebar-link btn-ghost" onclick="toggleTheme()" style="cursor:pointer;border:none;text-align:left;" aria-label="Toggle dark/light mode" data-tooltip="Toggle theme">
+      <span class="nav-icon" aria-hidden="true" id="theme-icon">{{ '☀️' if theme.mode == 'dark' else '🌙' }}</span>
+      <span class="nav-label" id="theme-label">{{ 'Light Mode' if theme.mode == 'dark' else 'Dark Mode' }}</span>
+    </button>
+
+    <button class="sidebar-collapse-btn" onclick="toggleSidebar()" aria-label="Collapse sidebar" data-tooltip="Collapse">
+      <span id="collapse-icon">◀</span>
+    </button>
+  </div>
+</aside>
+{% endif %}
+
+<!-- ==================== MOBILE BOTTOM NAV ==================== -->
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+  <div class="mobile-nav-items">
+    <a href="{{ url_for('dashboard.index') }}" class="mobile-nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}" aria-label="Dashboard" aria-current="{% if request.endpoint == 'dashboard.index' %}page{% endif %}">
+      <span class="mn-icon" aria-hidden="true">🏠</span><span>Home</span>
+    </a>
+    <a href="{{ url_for('flashcards.decks') }}" class="mobile-nav-item {% if request.blueprint == 'flashcards' %}active{% endif %}" aria-label="Flashcards" aria-current="{% if request.blueprint == 'flashcards' %}page{% endif %}">
+      <span class="mn-icon" aria-hidden="true">🃏</span><span>Cards</span>
+    </a>
+    <a href="{{ url_for('notes.list') }}" class="mobile-nav-item {% if request.blueprint == 'notes' %}active{% endif %}" aria-label="Notes" aria-current="{% if request.blueprint == 'notes' %}page{% endif %}">
+      <span class="mn-icon" aria-hidden="true">📓</span><span>Notes</span>
+    </a>
+    <a href="{{ url_for('planner.index') }}" class="mobile-nav-item {% if request.blueprint == 'planner' %}active{% endif %}" aria-label="Planner" aria-current="{% if request.blueprint == 'planner' %}page{% endif %}">
+      <span class="mn-icon" aria-hidden="true">📅</span><span>Plan</span>
+    </a>
+    <a href="{{ url_for('pomodoro.index') }}" class="mobile-nav-item {% if request.blueprint == 'pomodoro' %}active{% endif %}" aria-label="Pomodoro" aria-current="{% if request.blueprint == 'pomodoro' %}page{% endif %}">
+      <span class="mn-icon" aria-hidden="true">🍅</span><span>Focus</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<main class="app-content" id="app-content" role="main">
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      <div class="flash-messages" style="margin-bottom:1.5rem;">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else category }}" role="alert">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ==================== TOAST CONTAINER ==================== -->
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ==================== CORE JS ==================== -->
+<script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/sidebar.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/notifications.js') }}" defer></script>
+
+{% block extra_js %}{% endblock %}
+
+<!-- Register service worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+</script>
+
+</body>
+</html>

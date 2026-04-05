@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Notifications – StudyForce{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🔔 Notifications</h1>
+</div>
+
+{% if notifications %}
+<div class="glass p-3">
+  {% for n in notifications %}
+  <div style="display:flex; gap:0.75rem; align-items:flex-start; padding:0.75rem 0; {% if not loop.last %}border-bottom:1px solid var(--border-color);{% endif %}">
+    <div style="font-size:1.4rem; flex-shrink:0;">
+      {% if n.notification_type == 'badge_unlock' %}🎖
+      {% elif n.notification_type == 'group_invite' %}👥
+      {% elif n.notification_type == 'quiz_graded' %}📝
+      {% elif n.notification_type == 'study_reminder' %}⏰
+      {% else %}ℹ️{% endif %}
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:0.9rem; {% if not n.is_read %}font-weight:600;{% endif %}">
+        {% if n.link %}
+        <a href="{{ n.link }}" style="color:inherit; text-decoration:none;">{{ n.message }}</a>
+        {% else %}
+        {{ n.message }}
+        {% endif %}
+      </div>
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem;">
+        {{ n.created_at.strftime('%b %d, %Y at %H:%M') }}
+      </div>
+    </div>
+    {% if not n.is_read %}
+    <div style="width:8px; height:8px; border-radius:50%; background:var(--primary-color); margin-top:0.4rem; flex-shrink:0;"></div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="glass p-4" style="text-align:center;">
+  <div style="font-size:3rem; margin-bottom:0.5rem;">🔔</div>
+  <p style="color:var(--text-muted);">No notifications yet.</p>
+</div>
+{% endif %}
+{% endblock %}

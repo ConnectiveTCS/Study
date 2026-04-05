@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Study Groups – StudyForce{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">👥 Study Groups</h1>
+  <div style="display:flex; gap:0.5rem;">
+    <button class="btn btn-glass" onclick="document.getElementById('join-modal').classList.add('open')">Join with code</button>
+    <button class="btn btn-primary" onclick="document.getElementById('new-modal').classList.add('open')">+ New group</button>
+  </div>
+</div>
+
+{% if groups %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.85rem;">
+  {% for g in groups %}
+  <div class="glass p-3">
+    <div style="font-size:2rem; margin-bottom:0.4rem;">👥</div>
+    <div style="font-weight:600; font-size:1rem; margin-bottom:0.2rem;">{{ g.name }}</div>
+    {% if g.description %}<p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">{{ g.description }}</p>{% endif %}
+    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">{{ g.member_count }} member{{ 's' if g.member_count != 1 }}</div>
+    <a href="{{ url_for('groups.detail', group_id=g.id) }}" class="btn btn-primary btn-sm">View</a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="glass p-4" style="text-align:center;">
+  <div style="font-size:3rem; margin-bottom:0.5rem;">👥</div>
+  <p>No groups yet. Create one or join with an invite code.</p>
+</div>
+{% endif %}
+
+<!-- New group modal -->
+<div id="new-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div class="glass p-4" style="min-width:300px; max-width:420px; width:100%;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 style="font-size:1.1rem; font-weight:600;">Create group</h2>
+      <button class="btn btn-glass btn-sm" onclick="document.getElementById('new-modal').classList.remove('open')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('groups.new_group') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="form-group">
+        <label class="form-label">Group name *</label>
+        <input class="form-control" type="text" name="name" required maxlength="100" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" name="description" rows="2" maxlength="500"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Create</button>
+    </form>
+  </div>
+</div>
+
+<!-- Join modal -->
+<div id="join-modal" style="display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+  <div class="glass p-4" style="min-width:300px; max-width:400px; width:100%;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 style="font-size:1.1rem; font-weight:600;">Join a group</h2>
+      <button class="btn btn-glass btn-sm" onclick="document.getElementById('join-modal').classList.remove('open')">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('groups.join_group') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <div class="form-group">
+        <label class="form-label">Invite code</label>
+        <input class="form-control" type="text" name="invite_code" required placeholder="xxxxxxxx-xxxx-…" />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Join</button>
+    </form>
+  </div>
+</div>
+
+<style>
+  #new-modal.open, #join-modal.open { display:flex; }
+  #new-modal, #join-modal { align-items:center; justify-content:center; }
+</style>
+{% endblock %}

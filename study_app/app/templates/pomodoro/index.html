@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}Pomodoro – StudyForce{% endblock %}
+{% block extra_css %}
+<style>
+  .mode-card { cursor:pointer; border:2px solid transparent; transition:border-color .2s, transform .15s; }
+  .mode-card:hover { transform:translateY(-2px); }
+  .mode-card.active { border-color:var(--primary); }
+  #timer-ring { transition:stroke-dashoffset 1s linear; transform:rotate(-90deg); transform-origin:center; }
+  #timer-text { font-size:3rem; font-weight:800; font-feature-settings:"tnum"; letter-spacing:-2px; }
+  #phase-label { font-size:0.875rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+  .session-dot { width:10px; height:10px; border-radius:50%; display:inline-block; background:var(--primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🍅 Pomodoro</h1>
+  <span id="sessions-done" style="font-size:0.85rem; color:var(--text-muted);">0 sessions today</span>
+</div>
+
+<!-- Mode selector -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:0.75rem; margin-bottom:1.5rem;">
+  <div class="glass mode-card p-3 active" data-mode="classic" data-work="25" data-break="5" onclick="selectMode(this)">
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;">⏱</div>
+    <div style="font-weight:600;">Classic</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">25 / 5 min</div>
+  </div>
+  <div class="glass mode-card p-3" data-mode="deep" data-work="50" data-break="10" onclick="selectMode(this)">
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;">🧠</div>
+    <div style="font-weight:600;">Deep Work</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">50 / 10 min</div>
+  </div>
+  <div class="glass mode-card p-3" data-mode="micro" data-work="15" data-break="3" onclick="selectMode(this)">
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;">⚡</div>
+    <div style="font-weight:600;">Micro</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">15 / 3 min</div>
+  </div>
+  <div class="glass mode-card p-3" data-mode="custom" data-work="0" data-break="0" onclick="selectMode(this)">
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;">⚙️</div>
+    <div style="font-weight:600;">Custom</div>
+    <div id="custom-inputs" style="display:none; margin-top:0.5rem;">
+      <input id="custom-work" type="number" min="1" max="180" value="30" class="form-control" style="margin-bottom:0.3rem;" placeholder="Work (min)" onclick="event.stopPropagation()" />
+      <input id="custom-break" type="number" min="1" max="60" value="5" class="form-control" placeholder="Break (min)" onclick="event.stopPropagation()" />
+    </div>
+    <div id="custom-hint" style="font-size:0.8rem; color:var(--text-muted);">set your own</div>
+  </div>
+</div>
+
+<!-- Subject selector -->
+{% if subjects %}
+<div class="form-group" style="max-width:280px; margin-bottom:1.5rem;">
+  <label class="form-label">Studying:</label>
+  <select class="form-control" id="subject-select">
+    <option value="">— No subject —</option>
+    {% for s in subjects %}<option value="{{ s.id }}">{{ s.icon }} {{ s.name }}</option>{% endfor %}
+  </select>
+</div>
+{% endif %}
+
+<!-- Timer -->
+<div class="glass p-4" style="text-align:center; margin-bottom:1.5rem;">
+  <div id="phase-label">Work</div>
+  <svg width="200" height="200" viewBox="0 0 200 200" style="margin:1rem auto; display:block;">
+    <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+    <circle id="timer-ring" cx="100" cy="100" r="90" fill="none"
+      stroke="var(--primary)" stroke-width="10" stroke-linecap="round"
+      stroke-dasharray="565" stroke-dashoffset="0"/>
+    <text id="timer-text" x="100" y="110" text-anchor="middle" fill="var(--text-primary)" font-family="inherit"></text>
+  </svg>
+  <div id="sessions-dots" style="display:flex; gap:0.4rem; justify-content:center; margin-bottom:1.2rem;"></div>
+  <div style="display:flex; gap:0.75rem; justify-content:center;">
+    <button class="btn btn-glass" id="reset-btn" onclick="resetTimer()">↺ Reset</button>
+    <button class="btn btn-primary" id="start-btn" onclick="toggleTimer()" style="min-width:100px;">Start</button>
+    <button class="btn btn-glass" id="skip-btn" onclick="skipPhase()">Skip ›</button>
+  </div>
+</div>
+
+<!-- Session log -->
+{% if recent %}
+<h2 style="font-size:1rem; font-weight:600; margin-bottom:0.75rem;">Recent sessions</h2>
+<div class="glass p-3">
+  <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+    <thead><tr>
+      <th style="text-align:left; padding:0.3rem; color:var(--text-muted);">Mode</th>
+      <th style="text-align:left; padding:0.3rem; color:var(--text-muted);">Work</th>
+      <th style="text-align:left; padding:0.3rem; color:var(--text-muted);">Date</th>
+    </tr></thead>
+    <tbody>
+    {% for s in recent %}
+    <tr>
+      <td style="padding:0.3rem; text-transform:capitalize;">{{ s.mode }}</td>
+      <td style="padding:0.3rem;">{{ s.work_minutes }} min</td>
+      <td style="padding:0.3rem; color:var(--text-muted);">{{ s.started_at.strftime('%d %b %H:%M') }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+const LOG_URL = '/pomodoro/log';
+const CIRCUMFERENCE = 565;
+
+let mode = 'classic', workMin = 25, breakMin = 5;
+let isRunning = false, isBreak = false;
+let remaining = 0, totalSeconds = 0;
+let intervalId = null;
+let sessionsDoneToday = 0;
+
+function selectMode(card) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  mode = card.dataset.mode;
+
+  const customInputs = document.getElementById('custom-inputs');
+  const customHint = document.getElementById('custom-hint');
+  if (mode === 'custom') {
+    customInputs.style.display = 'block';
+    customHint.style.display = 'none';
+    workMin = parseInt(document.getElementById('custom-work').value) || 30;
+    breakMin = parseInt(document.getElementById('custom-break').value) || 5;
+  } else {
+    customInputs.style.display = 'none';
+    customHint.style.display = 'block';
+    workMin = parseInt(card.dataset.work);
+    breakMin = parseInt(card.dataset.break);
+  }
+  if (!isRunning) resetTimer();
+}
+
+function resetTimer() {
+  clearInterval(intervalId);
+  isRunning = false;
+  isBreak = false;
+  if (mode === 'custom') {
+    workMin = parseInt(document.getElementById('custom-work').value) || 30;
+    breakMin = parseInt(document.getElementById('custom-break').value) || 5;
+  }
+  remaining = workMin * 60;
+  totalSeconds = remaining;
+  renderTimer();
+  document.getElementById('start-btn').textContent = 'Start';
+  document.getElementById('phase-label').textContent = 'Work';
+}
+
+function toggleTimer() {
+  if (isRunning) {
+    clearInterval(intervalId);
+    isRunning = false;
+    document.getElementById('start-btn').textContent = 'Resume';
+  } else {
+    if (remaining <= 0) resetTimer();
+    isRunning = true;
+    document.getElementById('start-btn').textContent = 'Pause';
+    intervalId = setInterval(tick, 1000);
+  }
+}
+
+function tick() {
+  remaining--;
+  renderTimer();
+  if (remaining <= 0) {
+    clearInterval(intervalId);
+    isRunning = false;
+    phaseComplete();
+  }
+}
+
+function phaseComplete() {
+  if (!isBreak) {
+    // Work done
+    sessionsDoneToday++;
+    updateSessionDots();
+    logSession();
+    notify('Work session complete! 🎉 Time for a break.');
+    isBreak = true;
+    remaining = breakMin * 60;
+    totalSeconds = remaining;
+    document.getElementById('phase-label').textContent = 'Break';
+    document.getElementById('start-btn').textContent = 'Start break';
+  } else {
+    // Break done
+    notify('Break over! Ready to focus? 💪');
+    isBreak = false;
+    remaining = workMin * 60;
+    totalSeconds = remaining;
+    document.getElementById('phase-label').textContent = 'Work';
+    document.getElementById('start-btn').textContent = 'Start';
+  }
+  renderTimer();
+}
+
+function skipPhase() { remaining = 0; tick(); }
+
+function renderTimer() {
+  const m = Math.floor(remaining / 60);
+  const s = String(remaining % 60).padStart(2, '0');
+  document.getElementById('timer-text').textContent = `${m}:${s}`;
+  const pct = totalSeconds > 0 ? remaining / totalSeconds : 1;
+  document.getElementById('timer-ring').setAttribute('stroke-dashoffset', CIRCUMFERENCE * (1 - pct));
+  document.getElementById('timer-ring').setAttribute('stroke', isBreak ? 'var(--success)' : 'var(--primary)');
+}
+
+function updateSessionDots() {
+  const dotsEl = document.getElementById('sessions-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < Math.min(sessionsDoneToday, 8); i++) {
+    const d = document.createElement('span');
+    d.className = 'session-dot';
+    dotsEl.appendChild(d);
+  }
+  document.getElementById('sessions-done').textContent = `${sessionsDoneToday} session${sessionsDoneToday !== 1 ? 's' : ''} today`;
+}
+
+async function logSession() {
+  const subjectId = document.getElementById('subject-select')?.value || null;
+  try {
+    await fetch(LOG_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ mode, work_minutes: workMin, break_minutes: breakMin, subject_id: subjectId })
+    });
+  } catch(e) { /* silent */ }
+}
+
+function notify(msg) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('StudyForce', { body: msg, icon: '/static/icons/icon-192.png' });
+  }
+  showToast(msg, 'success');
+}
+
+// Request notification permission
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+resetTimer();
+</script>
+{% endblock %}

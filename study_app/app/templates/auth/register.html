@@ -1,0 +1,125 @@
+{% extends "auth/auth_base.html" %}
+{% block title %}Create Account – StudyForce{% endblock %}
+
+{% block auth_content %}
+<div class="auth-logo">
+  <div class="logo-emoji">✨</div>
+  <h1>Start studying smarter</h1>
+  <p>Free account — syncs all your data</p>
+</div>
+
+<form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+  <div class="form-group">
+    <label class="form-label" for="display_name">Your name</label>
+    <input
+      class="form-control"
+      type="text"
+      id="display_name"
+      name="display_name"
+      required
+      autocomplete="name"
+      placeholder="Alex"
+      maxlength="64"
+      value="{{ request.form.display_name or '' }}"
+    />
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="email">University email</label>
+    <input
+      class="form-control"
+      type="email"
+      id="email"
+      name="email"
+      required
+      autocomplete="email"
+      placeholder="alex@university.edu"
+      value="{{ request.form.email or '' }}"
+    />
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="password">Password</label>
+    <div class="input-group">
+      <input
+        class="form-control"
+        type="password"
+        id="password"
+        name="password"
+        required
+        autocomplete="new-password"
+        placeholder="Minimum 8 characters"
+        minlength="8"
+        aria-describedby="pw-strength-hint"
+      />
+      <button type="button" class="input-addon" onclick="togglePw('password')" aria-label="Toggle password visibility">👁</button>
+    </div>
+    <div id="pw-strength-hint" style="margin-top:0.4rem; height:4px; border-radius:2px; background:var(--border); overflow:hidden;">
+      <div id="pw-strength-bar" style="height:100%; width:0; transition:width 0.3s, background 0.3s;"></div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="confirm_password">Confirm password</label>
+    <input
+      class="form-control"
+      type="password"
+      id="confirm_password"
+      name="confirm_password"
+      required
+      autocomplete="new-password"
+      placeholder="Repeat your password"
+    />
+    <small id="confirm-error" class="text-danger" style="display:none;">Passwords don't match.</small>
+  </div>
+
+  <button type="submit" class="btn btn-primary w-full" id="submit-btn">Create free account</button>
+</form>
+
+<div class="auth-footer">
+  Already have an account? <a href="{{ url_for('auth.login') }}" class="text-accent">Sign in</a>
+  &nbsp;·&nbsp;
+  <a href="{{ url_for('dashboard.index') }}" class="text-muted">Continue as guest</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function togglePw(id) {
+    const f = document.getElementById(id);
+    f.type = f.type === 'password' ? 'text' : 'password';
+  }
+
+  const pwField = document.getElementById('password');
+  const bar     = document.getElementById('pw-strength-bar');
+  const confirm = document.getElementById('confirm_password');
+  const confErr = document.getElementById('confirm-error');
+
+  pwField.addEventListener('input', function () {
+    const v = this.value;
+    let score = 0;
+    if (v.length >= 8)  score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const widths = ['0%', '25%', '50%', '75%', '100%'];
+    const colors = ['', '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71'];
+    bar.style.width  = widths[score];
+    bar.style.background = colors[score];
+  });
+
+  confirm.addEventListener('input', function () {
+    confErr.style.display = this.value && this.value !== pwField.value ? 'block' : 'none';
+  });
+
+  document.querySelector('form').addEventListener('submit', function (e) {
+    if (confirm.value !== pwField.value) {
+      e.preventDefault();
+      confErr.style.display = 'block';
+      confirm.focus();
+    }
+  });
+</script>
+{% endblock %}

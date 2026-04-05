@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }} – Take Quiz{% endblock %}
+{% block extra_css %}
+<style>
+  #progress-bar { height:4px; background:var(--primary); transition:width .3s; border-radius:4px; }
+  .q-opt label { display:flex; align-items:center; gap:0.6rem; padding:0.6rem 0.8rem; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.4rem; transition:background .15s; }
+  .q-opt label:hover { background:rgba(255,255,255,0.07); }
+  .q-opt input[type=radio]:checked + span { color:var(--primary); font-weight:600; }
+  #timer-display { font-size:1.5rem; font-weight:700; font-feature-settings:"tnum"; }
+  #timer-display.low-time { color:var(--danger); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('quizzes.quiz_detail', quiz_id=quiz.id) }}" class="btn btn-glass" id="exit-btn">✕ Exit</a>
+  <h1 class="page-title">{{ quiz.title }}</h1>
+  {% if quiz.time_limit_seconds %}
+    <div id="timer-display">{{ quiz.time_limit_seconds // 60 }}:00</div>
+  {% endif %}
+</div>
+
+<!-- Progress bar -->
+<div style="background:rgba(255,255,255,0.1); border-radius:4px; margin-bottom:1.5rem; overflow:hidden;">
+  <div id="progress-bar" style="width:0%"></div>
+</div>
+
+<!-- Question navigation pills -->
+<div id="nav-pills" style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;"></div>
+
+<!-- Question card -->
+<div class="glass p-4 p-sm-5" id="q-card">
+  <p id="q-number" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;"></p>
+  <p id="q-text" style="font-size:1.1rem; font-weight:500; margin-bottom:1rem;"></p>
+  <div id="q-body"></div>
+</div>
+
+<div style="display:flex; justify-content:space-between; margin-top:1rem;">
+  <button class="btn btn-glass" id="prev-btn" onclick="navigate(-1)">← Previous</button>
+  <span id="answer-status" style="font-size:0.8rem; color:var(--text-muted); align-self:center;"></span>
+  <button class="btn btn-primary" id="next-btn" onclick="navigate(1)">Next →</button>
+</div>
+
+<div style="margin-top:1.5rem; text-align:center;">
+  <button class="btn btn-primary" id="submit-btn" style="display:none; font-size:1rem; padding:0.8rem 2rem;" onclick="submitQuiz()">Submit quiz</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const QUESTIONS = {{ questions_json | safe }};
+const SUBMIT_URL = "{{ url_for('quizzes.submit_quiz', quiz_id=quiz.id) }}";
+const RESULTS_BASE = "{{ url_for('quizzes.list') }}".replace('/quizzes/', '/quizzes/attempts/');
+const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const TIME_LIMIT = {{ quiz.time_limit_seconds or 0 }};
+
+let current = 0;
+const answers = {};
+let timerInterval = null;
+let remaining = TIME_LIMIT;
+
+const qNumber = document.getElementById('q-number');
+const qText = document.getElementById('q-text');
+const qBody = document.getElementById('q-body');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const submitBtn = document.getElementById('submit-btn');
+const progressBar = document.getElementById('progress-bar');
+const navPills = document.getElementById('nav-pills');
+const answerStatus = document.getElementById('answer-status');
+
+function buildNavPills() {
+  navPills.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-glass btn-sm';
+    btn.id = `pill-${i}`;
+    btn.textContent = i + 1;
+    btn.style.width = '2rem';
+    btn.style.padding = '0.2rem';
+    if (i === current) btn.style.background = 'var(--primary)';
+    if (answers[i] !== undefined) btn.style.opacity = '1';
+    btn.onclick = () => goTo(i);
+    navPills.appendChild(btn);
+  });
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  qNumber.textContent = `Question ${current + 1} of ${QUESTIONS.length}`;
+  qText.textContent = q.text;
+  qBody.innerHTML = '';
+
+  if (q.type === 'mcq') {
+    q.options.forEach((opt, oi) => {
+      const div = document.createElement('div');
+      div.className = 'q-opt';
+      const id = `opt-${current}-${oi}`;
+      const checked = answers[current] === String(oi) ? 'checked' : '';
+      div.innerHTML = `<label><input type="radio" name="q${current}" value="${oi}" ${checked} onchange="recordAnswer(String(this.value))" /><span>${opt}</span></label>`;
+      qBody.appendChild(div);
+    });
+  } else if (q.type === 'true_false') {
+    ['True', 'False'].forEach(val => {
+      const div = document.createElement('div');
+      div.className = 'q-opt';
+      const v = val.toLowerCase();
+      const checked = answers[current] === v ? 'checked' : '';
+      div.innerHTML = `<label><input type="radio" name="q${current}" value="${v}" ${checked} onchange="recordAnswer(this.value)" /><span>${val}</span></label>`;
+      qBody.appendChild(div);
+    });
+  } else {
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'form-control';
+    inp.placeholder = 'Your answer…';
+    inp.value = answers[current] || '';
+    inp.oninput = () => recordAnswer(inp.value.trim());
+    qBody.appendChild(inp);
+    setTimeout(() => inp.focus(), 50);
+  }
+
+  prevBtn.disabled = current === 0;
+  nextBtn.style.display = current < QUESTIONS.length - 1 ? '' : 'none';
+  submitBtn.style.display = current === QUESTIONS.length - 1 ? '' : 'none';
+  updateProgress();
+  buildNavPills();
+  updateAnswerStatus();
+}
+
+function recordAnswer(val) {
+  answers[current] = val;
+  buildNavPills();
+  updateAnswerStatus();
+}
+
+function updateProgress() {
+  const pct = ((current + 1) / QUESTIONS.length) * 100;
+  progressBar.style.width = pct + '%';
+}
+
+function updateAnswerStatus() {
+  const answered = Object.keys(answers).length;
+  answerStatus.textContent = `${answered} / ${QUESTIONS.length} answered`;
+}
+
+function navigate(dir) { goTo(current + dir); }
+function goTo(i) {
+  if (i < 0 || i >= QUESTIONS.length) return;
+  current = i;
+  renderQuestion();
+}
+
+async function submitQuiz() {
+  const unanswered = QUESTIONS.length - Object.keys(answers).length;
+  if (unanswered > 0 && !confirm(`${unanswered} question(s) unanswered. Submit anyway?`)) return;
+
+  const payload = { answers: {} };
+  QUESTIONS.forEach((q, i) => { payload.answers[q.id] = answers[i] !== undefined ? answers[i] : ''; });
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting…';
+
+  try {
+    const resp = await fetch(SUBMIT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      window.location.href = `/quizzes/attempts/${data.attempt_id}`;
+    } else {
+      showToast(data.error || 'Submission failed', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit quiz';
+    }
+  } catch(e) {
+    showToast('Network error', 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit quiz';
+  }
+}
+
+// Timer
+if (TIME_LIMIT > 0) {
+  const timerEl = document.getElementById('timer-display');
+  function updateTimer() {
+    remaining--;
+    if (remaining <= 0) { clearInterval(timerInterval); submitQuiz(); return; }
+    const m = Math.floor(remaining / 60);
+    const s = String(remaining % 60).padStart(2, '0');
+    timerEl.textContent = `${m}:${s}`;
+    if (remaining <= 60) timerEl.classList.add('low-time');
+  }
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
+renderQuestion();
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "auth/auth_base.html" %}
+{% block title %}Log In – StudyForce{% endblock %}
+
+{% block auth_content %}
+<div class="auth-logo">
+  <div class="logo-emoji">🎓</div>
+  <h1>Welcome back</h1>
+  <p>Sign in to continue studying</p>
+</div>
+
+<form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+  <div class="form-group">
+    <label class="form-label" for="email">Email</label>
+    <input
+      class="form-control"
+      type="email"
+      id="email"
+      name="email"
+      required
+      autocomplete="email"
+      placeholder="you@university.edu"
+      value="{{ request.form.email or '' }}"
+      aria-describedby="email-error"
+    />
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="password">
+      Password
+      <a href="{{ url_for('auth.forgot_password') }}" class="text-accent" style="font-size:0.8rem; float:right;">Forgot password?</a>
+    </label>
+    <div class="input-group">
+      <input
+        class="form-control"
+        type="password"
+        id="password"
+        name="password"
+        required
+        autocomplete="current-password"
+        placeholder="••••••••"
+        aria-describedby="password-error"
+      />
+      <button type="button" class="input-addon" onclick="togglePasswordVisibility('password')" aria-label="Toggle password visibility">👁</button>
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:center; margin-bottom:1.25rem;">
+    <input type="checkbox" id="remember" name="remember" style="margin-right:0.5rem;" />
+    <label for="remember" style="font-size:0.875rem; cursor:pointer;">Keep me signed in</label>
+  </div>
+
+  <button type="submit" class="btn btn-primary w-full">Sign In</button>
+</form>
+
+<div class="auth-divider">— or continue without an account —</div>
+
+<a href="{{ url_for('dashboard.index') }}" class="btn btn-glass w-full" style="text-align:center; display:block;">
+  Continue as Guest
+</a>
+
+<div class="auth-footer">
+  Don't have an account? <a href="{{ url_for('auth.register') }}" class="text-accent">Create one free</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function togglePasswordVisibility(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.type = field.type === 'password' ? 'text' : 'password';
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Quizzes – StudyForce{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📝 Quizzes</h1>
+    <p class="page-subtitle">Test your knowledge with timed quizzes.</p>
+  </div>
+  <a href="{{ url_for('quizzes.new_quiz') }}" class="btn btn-primary">+ New Quiz</a>
+</div>
+
+{% if quizzes %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem;">
+  {% for quiz in quizzes %}
+  <div class="glass card-hover p-4">
+    {% if quiz.subject %}
+    <span class="badge-chip" style="background:{{ quiz.subject.color }}22; color:{{ quiz.subject.color }}; margin-bottom:0.5rem; display:inline-block; font-size:0.7rem;">
+      {{ quiz.subject.icon }} {{ quiz.subject.name }}
+    </span>
+    {% endif %}
+    <h3 style="font-size:0.95rem; margin:0 0 0.25rem;">{{ quiz.title }}</h3>
+    <div style="display:flex; gap:0.6rem; margin:0.5rem 0 0.75rem; font-size:0.8rem; color:var(--text-muted);">
+      <span>❓ {{ quiz.questions|length }} Qs</span>
+      {% if quiz.time_limit_seconds %}<span>⏱ {{ (quiz.time_limit_seconds // 60) }}m</span>{% endif %}
+      {% if quiz.is_shared %}<span class="badge-chip">🌐</span>{% endif %}
+    </div>
+    <div style="display:flex; gap:0.5rem;">
+      <a href="{{ url_for('quizzes.quiz_detail', quiz_id=quiz.id) }}" class="btn btn-glass btn-sm" style="flex:1; text-align:center;">Manage</a>
+      <a href="{{ url_for('quizzes.take_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm" style="flex:1; text-align:center;">Take →</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state glass p-6">
+  <div class="empty-icon">📝</div>
+  <h3 class="empty-title">No quizzes yet</h3>
+  <p class="empty-text">Build your first quiz with multiple choice, true/false, and short answer questions.</p>
+  <a href="{{ url_for('quizzes.new_quiz') }}" class="btn btn-primary">Create quiz</a>
+</div>
+{% endif %}
+{% endblock %}

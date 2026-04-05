@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}New Deck – StudyForce{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('flashcards.decks') }}" class="btn btn-glass">← Back</a>
+  <h1 class="page-title">Create a Deck</h1>
+</div>
+
+<div class="glass p-5" style="max-width:560px; margin:0 auto;">
+  <form method="POST" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    <div class="form-group">
+      <label class="form-label" for="title">Deck title *</label>
+      <input class="form-control" type="text" id="title" name="title" required maxlength="128" placeholder="e.g. Biology Chapter 4" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="description">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="2" placeholder="Optional notes about this deck…" maxlength="512"></textarea>
+    </div>
+
+    {% if subjects %}
+    <div class="form-group">
+      <label class="form-label" for="subject_id">Subject</label>
+      <select class="form-control" id="subject_id" name="subject_id">
+        <option value="">— None —</option>
+        {% for s in subjects %}
+        <option value="{{ s.id }}">{{ s.icon }} {{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem;">
+      <input type="checkbox" id="is_public" name="is_public" />
+      <label for="is_public" style="cursor:pointer; font-size:0.875rem;">Make this deck public (shareable link)</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-full">Create deck</button>
+  </form>
+</div>
+{% endblock %}

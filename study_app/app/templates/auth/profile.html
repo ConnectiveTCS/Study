@@ -1,0 +1,96 @@
+{% extends "auth/auth_base.html" %}
+{% block title %}My Profile – StudyForce{% endblock %}
+
+{% block auth_content %}
+<div class="auth-logo">
+  <div class="logo-emoji" style="cursor:pointer;" id="avatar-display" title="Click to change avatar">{{ current_user.avatar }}</div>
+  <h1>{{ current_user.display_name }}</h1>
+  <p>{{ current_user.email }}</p>
+</div>
+
+<!-- Avatar picker -->
+<div id="avatar-picker" style="display:none; text-align:center; margin-bottom:1.5rem;">
+  <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.75rem;">Pick an avatar</p>
+  <div style="display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center;">
+    {% for emoji in ['🎓','📚','🦉','🐉','🚀','🌟','🐬','🦊','🐺','🧠','⚡','🎯','🌈','🍀','🔥'] %}
+    <button type="button" class="emoji-btn {% if current_user.avatar == emoji %}active{% endif %}"
+            onclick="selectAvatar('{{ emoji }}')"
+            title="{{ emoji }}"
+            style="font-size:1.5rem; background:none; border:2px solid transparent; border-radius:8px; padding:4px 6px; cursor:pointer; transition:border-color 0.2s;">
+      {{ emoji }}
+    </button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Profile form -->
+<form method="POST" action="{{ url_for('auth.profile') }}" novalidate id="profile-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <input type="hidden" name="avatar" id="avatar-input" value="{{ current_user.avatar }}" />
+
+  <div class="form-group">
+    <label class="form-label" for="display_name">Display name</label>
+    <input class="form-control" type="text" id="display_name" name="display_name"
+           value="{{ current_user.display_name }}" maxlength="64" required />
+  </div>
+
+  <hr style="border-color:var(--border); margin: 1.25rem 0;" />
+  <p style="font-size:0.9rem; font-weight:600; margin-bottom:1rem;">Change password <span style="color:var(--text-muted); font-weight:400;">(leave blank to keep current)</span></p>
+
+  <div class="form-group">
+    <label class="form-label" for="current_password">Current password</label>
+    <input class="form-control" type="password" id="current_password" name="current_password"
+           autocomplete="current-password" placeholder="••••••••" />
+  </div>
+
+  <div class="form-group">
+    <label class="form-label" for="new_password">New password</label>
+    <input class="form-control" type="password" id="new_password" name="new_password"
+           autocomplete="new-password" placeholder="Minimum 8 characters" minlength="8" />
+  </div>
+
+  <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+    <button type="submit" class="btn btn-primary" style="flex:1;">Save changes</button>
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-glass" style="flex:1; text-align:center;">Cancel</a>
+  </div>
+</form>
+
+<!-- Earned Badges -->
+{% if current_user.user_badges %}
+<div style="margin-top:2rem;">
+  <h3 style="font-size:1rem; margin-bottom:1rem;">Earned Badges</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+    {% for ub in current_user.user_badges %}
+    <div class="badge-chip" title="{{ ub.badge.description }}">
+      {{ ub.badge.icon }} {{ ub.badge.name }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="auth-footer" style="margin-top:2rem;">
+  <a href="{{ url_for('auth.logout') }}" class="text-danger" onclick="return confirm('Sign out?')">Sign out</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const display = document.getElementById('avatar-display');
+  const picker  = document.getElementById('avatar-picker');
+  const input   = document.getElementById('avatar-input');
+
+  display.addEventListener('click', () => {
+    picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+  });
+
+  function selectAvatar(emoji) {
+    display.textContent = emoji;
+    input.value = emoji;
+    document.querySelectorAll('.emoji-btn').forEach(b => {
+      b.style.borderColor = b.textContent.trim() === emoji ? 'var(--accent)' : 'transparent';
+    });
+    picker.style.display = 'none';
+  }
+</script>
+{% endblock %}

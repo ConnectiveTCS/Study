@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }} – StudyForce{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('quizzes.list') }}" class="btn btn-glass">← Quizzes</a>
+  <h1 class="page-title">{{ quiz.title }}</h1>
+</div>
+
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1rem; align-items:start;">
+  <!-- Info panel -->
+  <div class="glass p-4">
+    {% if quiz.description %}
+      <p style="color:var(--text-muted); margin-bottom:1rem;">{{ quiz.description }}</p>
+    {% endif %}
+    <div style="display:flex; gap:1.5rem; font-size:0.85rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+      <span>📋 {{ quiz.questions | length }} question{{ 's' if quiz.questions | length != 1 }}</span>
+      {% if quiz.time_limit_minutes %}
+        <span>⏱ {{ quiz.time_limit_minutes }} min</span>
+      {% else %}
+        <span>⏱ No time limit</span>
+      {% endif %}
+      {% if quiz.subject %}<span>📚 {{ quiz.subject.icon }} {{ quiz.subject.name }}</span>{% endif %}
+      {% if quiz.is_shared %}<span>🌐 Public</span>{% endif %}
+    </div>
+    <div style="display:flex; gap:0.5rem;">
+      <a href="{{ url_for('quizzes.take_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Take quiz</a>
+      {% if can_manage %}
+        <form method="POST" action="{{ url_for('quizzes.delete_quiz', quiz_id=quiz.id) }}" onsubmit="return confirm('Delete quiz?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit" class="btn btn-glass" style="color:var(--danger);">Delete</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Attempt history -->
+  <div class="glass p-4">
+    <h2 style="font-size:1rem; font-weight:600; margin-bottom:0.75rem;">Your Attempts</h2>
+    {% if attempts %}
+      <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
+        <thead><tr>
+          <th style="text-align:left; padding:0.25rem 0; color:var(--text-muted);">Date</th>
+          <th style="text-align:right; padding:0.25rem 0; color:var(--text-muted);">Score</th>
+          <th style="text-align:right; padding:0.25rem 0; color:var(--text-muted);"></th>
+        </tr></thead>
+        <tbody>
+        {% for a in attempts %}
+          <tr>
+            <td style="padding:0.25rem 0;">{{ a.created_at.strftime('%d %b') }}</td>
+            <td style="text-align:right; padding:0.25rem 0; font-weight:600;
+              color:{{ 'var(--success)' if a.score_pct >= 70 else ('var(--warning)' if a.score_pct >= 40 else 'var(--danger)') }};">
+              {{ a.score_pct }}%
+            </td>
+            <td style="text-align:right; padding:0.25rem 0;">
+              <a href="{{ url_for('quizzes.attempt_results', attempt_id=a.id) }}" style="color:var(--primary); text-decoration:none;">view</a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="color:var(--text-muted); font-size:0.85rem;">No attempts yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

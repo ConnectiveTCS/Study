@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – StudyForce{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Good {{ time_greeting }}, {{ current_user.avatar }} {{ current_user.display_name }}!</h1>
+    <p class="page-subtitle">Here's your study overview.</p>
+  </div>
+</div>
+
+<!-- Stat row -->
+<div class="stats-grid">
+  <div class="stat-card glass">
+    <div class="stat-icon">🔥</div>
+    <div class="stat-value">{{ streak.current_streak if streak else 0 }}</div>
+    <div class="stat-label">Day streak</div>
+  </div>
+  <div class="stat-card glass">
+    <div class="stat-icon">⚡</div>
+    <div class="stat-value">{{ total_xp }}</div>
+    <div class="stat-label">Total XP</div>
+  </div>
+  <div class="stat-card glass">
+    <div class="stat-icon">🃏</div>
+    <div class="stat-value">{{ total_due }}</div>
+    <div class="stat-label">Cards due</div>
+  </div>
+  <div class="stat-card glass">
+    <div class="stat-icon">📅</div>
+    <div class="stat-value">{{ upcoming|length }}</div>
+    <div class="stat-label">Upcoming events</div>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+
+  <!-- Due flashcards CTA -->
+  {% if total_due > 0 %}
+  <div class="glass card-hover p-4" style="border-left: 3px solid var(--accent);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h3 style="font-size:1rem; margin:0;">{{ total_due }} card{{ 's' if total_due != 1 }} due for review</h3>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin:0.25rem 0 0;">Keep your streak alive!</p>
+      </div>
+      <a href="{{ url_for('flashcards.study_next') }}" class="btn btn-primary btn-sm">Study now →</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+
+    <!-- Upcoming events -->
+    <div class="glass p-4">
+      <h3 style="font-size:0.9rem; font-weight:600; margin-bottom:1rem;">📅 Upcoming (7 days)</h3>
+      {% if upcoming %}
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem;">
+          {% for ev in upcoming %}
+          <li style="display:flex; gap:0.75rem; align-items:center;">
+            {% set ev_color = ev.subject.color if ev.subject else '#7c3aed' %}
+            <span class="badge-chip" style="background:{{ ev_color }}22; color:{{ ev_color }}; font-size:0.7rem;">
+              {{ ev.event_type }}
+            </span>
+            <span style="flex:1; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ ev.title }}</span>
+            <span style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">{{ ev.start_dt.strftime('%b %d') }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <a href="{{ url_for('planner.index') }}" class="text-accent" style="font-size:0.8rem; margin-top:0.75rem; display:block;">View planner →</a>
+      {% else %}
+        <div class="empty-state" style="padding:1.5rem 0.5rem;">
+          <div class="empty-icon">📆</div>
+          <p class="empty-text">No upcoming events</p>
+          <a href="{{ url_for('planner.index') }}" class="btn btn-glass btn-sm">Open planner</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Recent XP -->
+    <div class="glass p-4">
+      <h3 style="font-size:0.9rem; font-weight:600; margin-bottom:1rem;">⚡ Recent activity</h3>
+      {% if recent_xp %}
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.5rem;">
+          {% for tx in recent_xp %}
+          <li style="display:flex; justify-content:space-between; font-size:0.85rem;">
+            <span style="color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:70%;">{{ tx.reason }}</span>
+            <span style="color:var(--accent); font-weight:600;">+{{ tx.amount }} XP</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state" style="padding:1.5rem 0.5rem;">
+          <div class="empty-icon">✨</div>
+          <p class="empty-text">No XP yet — start studying!</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Subjects grid -->
+  <div class="glass p-4">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 style="font-size:0.9rem; font-weight:600; margin:0;">📚 Your Subjects</h3>
+      <a href="{{ url_for('flashcards.decks') }}" class="text-accent" style="font-size:0.8rem;">All decks →</a>
+    </div>
+    {% if subjects %}
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:0.75rem;">
+      {% for subj in subjects %}
+      {% set prog = subject_progress.get(subj.id) %}
+      <div class="glass-strong p-3 card-hover" style="border-left:3px solid {{ subj.color }};">
+        <div style="font-size:1.25rem; margin-bottom:0.25rem;">{{ subj.icon }}</div>
+        <div style="font-weight:600; font-size:0.875rem;">{{ subj.name }}</div>
+        {% if prog %}
+        <div style="margin-top:0.5rem;">
+          <div style="height:4px; background:var(--border); border-radius:2px; overflow:hidden;">
+            <div style="height:100%; width:{{ prog.mastery_score }}%; background:{{ subj.color }};"></div>
+          </div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.2rem;">{{ prog.mastery_score|round(0)|int }}% mastery</div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎒</div>
+      <p class="empty-text">Personalise your study subjects</p>
+      <a href="{{ url_for('auth.onboarding_step1') }}" class="btn btn-glass btn-sm">Add subjects</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Quick actions -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem;">
+    {% for icon, label, url_name in [
+      ('🃏','Flashcards','flashcards.decks'),
+      ('📝','Quizzes','quizzes.list'),
+      ('📓','Notes','notes.list'),
+      ('🗓️','Planner','planner.index'),
+      ('🍅','Pomodoro','pomodoro.index'),
+      ('🧩','Mind Maps','mindmaps.list'),
+      ('📄','PDFs','pdfs.list'),
+      ('👥','Groups','groups.list'),
+    ] %}
+    <a href="{{ url_for(url_name) }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;">{{ icon }}</div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">{{ label }}</div>
+    </a>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

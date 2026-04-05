@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Quiz Results – StudyForce{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a href="{{ url_for('quizzes.quiz_detail', quiz_id=attempt.quiz_id) }}" class="btn btn-glass">← Quiz</a>
+  <h1 class="page-title">Results</h1>
+</div>
+
+<!-- Score hero -->
+{% set pct = attempt.score_pct %}
+{% set colour = 'var(--success)' if pct >= 70 else ('var(--warning)' if pct >= 40 else 'var(--danger)') %}
+<div class="glass p-4" style="text-align:center; margin-bottom:1.5rem;">
+  <div style="font-size:4rem; font-weight:800; color:{{ colour }};">{{ pct }}%</div>
+  <div style="font-size:1.1rem; margin-bottom:0.5rem;">
+    {{ attempt.correct_count }} / {{ attempt.total_questions }} correct
+  </div>
+  <div style="font-size:0.85rem; color:var(--text-muted);">
+    {{ 'Great job! 🎉' if pct >= 70 else ('Keep practising 📖' if pct >= 40 else 'Review the material and try again 💪') }}
+  </div>
+  <div style="margin-top:1rem; display:flex; gap:0.5rem; justify-content:center;">
+    <a href="{{ url_for('quizzes.take_quiz', quiz_id=attempt.quiz_id) }}" class="btn btn-primary">Retry</a>
+    <a href="{{ url_for('quizzes.list') }}" class="btn btn-glass">All quizzes</a>
+  </div>
+</div>
+
+<!-- Per-question breakdown -->
+<h2 style="font-size:1rem; font-weight:600; margin-bottom:0.75rem;">Answer Review</h2>
+<div style="display:flex; flex-direction:column; gap:0.6rem;">
+  {% for aa in attempt_answers %}
+  {% set q = aa.question %}
+  <div class="glass p-3" style="border-left:3px solid {{ 'var(--success)' if aa.is_correct else 'var(--danger)' }};">
+    <div style="display:flex; justify-content:space-between; align-items:start;">
+      <div style="flex:1;">
+        <p style="font-weight:500; margin-bottom:0.3rem;">{{ loop.index }}. {{ q.text }}</p>
+        <p style="font-size:0.85rem; margin-bottom:0.15rem;">
+          <span style="color:var(--text-muted);">Your answer: </span>
+          {% if q.q_type == 'mcq' %}
+            {% if aa.given_answer.isdigit() %}
+              {{ q.options[aa.given_answer | int] if aa.given_answer | int < q.options | length else aa.given_answer }}
+            {% else %}
+              {{ aa.given_answer or '—' }}
+            {% endif %}
+          {% else %}
+            {{ aa.given_answer or '—' }}
+          {% endif %}
+        </p>
+        {% if not aa.is_correct %}
+        <p style="font-size:0.85rem;">
+          <span style="color:var(--text-muted);">Correct: </span>
+          {% if q.q_type == 'mcq' %}
+            {% if q.correct_answer.isdigit() %}
+              {{ q.options[q.correct_answer | int] if q.correct_answer | int < q.options | length else q.correct_answer }}
+            {% else %}
+              {{ q.correct_answer }}
+            {% endif %}
+          {% else %}
+            {{ q.correct_answer }}
+          {% endif %}
+        </p>
+        {% endif %}
+      </div>
+      <span style="font-size:1.2rem; margin-left:1rem;">{{ '✅' if aa.is_correct else '❌' }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

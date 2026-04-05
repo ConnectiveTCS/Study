@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Badges – StudyForce{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">🎖 Badges</h1>
+  <div style="display:flex; gap:0.5rem; align-items:center;">
+    <span style="color:var(--text-muted); font-size:0.9rem;">{{ earned_ids | length }} / {{ all_badges | length }} earned</span>
+    <a href="{{ url_for('gamification.leaderboard') }}" class="btn btn-glass">🏆 Leaderboard</a>
+  </div>
+</div>
+
+<div style="margin-bottom:0.5rem; color:var(--text-muted); font-size:0.85rem;">Your XP: <strong style="color:var(--accent-color);">{{ my_xp }}</strong></div>
+
+{% if all_badges %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:0.85rem;">
+  {% for badge in all_badges %}
+  {% set earned = badge.id in earned_ids %}
+  <div class="glass p-3 {% if not earned %}badge-locked{% endif %}" style="{% if not earned %}opacity:0.55; filter:grayscale(0.6);{% endif %} text-align:center;">
+    <div style="font-size:2.5rem; margin-bottom:0.4rem;">{{ badge.icon }}</div>
+    <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.2rem;">{{ badge.name }}</div>
+    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">{{ badge.description }}</div>
+    {% if earned %}
+    <span style="font-size:0.75rem; background:rgba(16,185,129,0.15); color:#10b981; padding:0.15rem 0.6rem; border-radius:1rem; font-weight:600;">Earned ✓</span>
+    {% else %}
+    <span style="font-size:0.75rem; background:rgba(100,116,139,0.15); color:var(--text-muted); padding:0.15rem 0.6rem; border-radius:1rem;">
+      {% if badge.xp_threshold > 0 %}{{ badge.xp_threshold }} XP needed{% else %}Complete a challenge{% endif %}
+    </span>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="glass p-4" style="text-align:center;">
+  <div style="font-size:3rem; margin-bottom:0.5rem;">🎖</div>
+  <p style="color:var(--text-muted);">No badges configured yet.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "auth/auth_base.html" %}
+{% block title %}Daily Study Goal – StudyForce{% endblock %}
+
+{% block auth_content %}
+<div class="auth-logo">
+  <div class="logo-emoji">⏱️</div>
+  <h1>How long each day?</h1>
+  <p>Set a daily study goal to build your streak.</p>
+</div>
+
+<div class="onboarding-steps" aria-label="Step 2 of 3">
+  <div class="step-dot done"></div>
+  <div class="step-dot active"></div>
+  <div class="step-dot"></div>
+</div>
+
+<form method="POST" action="{{ url_for('auth.onboarding_step2') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+  <div style="text-align:center; margin-bottom:2rem;">
+    <div style="font-size:3rem; font-weight:700; color:var(--accent);" id="goal-display">60</div>
+    <div style="color:var(--text-muted); font-size:0.875rem;">minutes per day</div>
+  </div>
+
+  <input type="range" id="goal-range" name="daily_goal_minutes"
+         min="15" max="480" step="15" value="60"
+         style="width:100%; accent-color:var(--accent); cursor:pointer;"
+         aria-label="Daily goal in minutes"
+         oninput="document.getElementById('goal-display').textContent = this.value" />
+
+  <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem; margin-bottom:1.75rem;">
+    <span>15 min</span><span>2 h</span><span>4 h</span><span>8 h</span>
+  </div>
+
+  <!-- Quick presets -->
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; margin-bottom:1.75rem;">
+    {% for mins, label in [(30,'Casual'),(60,'Standard'),(120,'Focused'),(240,'Intensive')] %}
+    <button type="button" class="btn btn-glass preset-btn" data-mins="{{ mins }}"
+            style="font-size:0.78rem; padding:0.5rem 0;" onclick="setGoal({{ mins }})">
+      <div>{{ label }}</div>
+      <div style="color:var(--text-muted); font-size:0.7rem;">{{ mins }} min</div>
+    </button>
+    {% endfor %}
+  </div>
+
+  <button type="submit" class="btn btn-primary w-full">Next →</button>
+</form>
+
+<div class="auth-footer">
+  <a href="{{ url_for('auth.onboarding_step3') }}" class="text-muted" style="font-size:0.8rem;">Skip for now</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function setGoal(mins) {
+    document.getElementById('goal-range').value = mins;
+    document.getElementById('goal-display').textContent = mins;
+    document.querySelectorAll('.preset-btn').forEach(b => {
+      b.classList.toggle('active', +b.dataset.mins === mins);
+    });
+  }
+</script>
+{% endblock %}

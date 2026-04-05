@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Notes – StudyForce{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📓 Notes</h1>
+    <p class="page-subtitle">Rich text notes with AI export.</p>
+  </div>
+  <div style="display:flex; gap:0.5rem;">
+    <button class="btn btn-glass" onclick="openExportModal()">🤖 Export to AI</button>
+    <a href="{{ url_for('notes.new_note') }}" class="btn btn-primary">+ New Note</a>
+  </div>
+</div>
+
+{% if notes %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem;">
+  {% for note in notes %}
+  <a href="{{ url_for('notes.edit_note', note_id=note.id) }}"
+     class="glass card-hover p-4" style="text-decoration:none; display:block;">
+    {% if note.subject %}
+    <span class="badge-chip" style="background:{{ note.subject.color }}22; color:{{ note.subject.color }}; margin-bottom:0.5rem; display:inline-block; font-size:0.7rem;">
+      {{ note.subject.icon }} {{ note.subject.name }}
+    </span>
+    {% endif %}
+    <h3 style="font-size:0.95rem; margin:0 0 0.3rem; font-weight:600;">{{ note.title }}</h3>
+    <p style="color:var(--text-muted); font-size:0.8rem; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; margin:0 0 0.75rem;">
+      {{ note.content_plain[:200] or "Empty note" }}
+    </p>
+    <div style="font-size:0.72rem; color:var(--text-muted);">
+      {{ note.updated_at.strftime('%b %d, %Y') }}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state glass p-6">
+  <div class="empty-icon">📓</div>
+  <h3 class="empty-title">No notes yet</h3>
+  <p class="empty-text">Write your first note with the rich text editor.</p>
+  <a href="{{ url_for('notes.new_note') }}" class="btn btn-primary">Create a note</a>
+</div>
+{% endif %}
+
+<!-- AI Export Modal -->
+<div id="export-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="export-modal-title" style="display:none;">
+  <div class="modal glass" style="max-width:600px; width:100%;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 id="export-modal-title" style="margin:0;">🤖 Export Notes to AI</h3>
+      <button onclick="closeExportModal()" class="btn btn-glass btn-sm">✕</button>
+    </div>
+    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
+      Copy this JSON into any AI assistant (ChatGPT, Claude, Gemini, etc.) to get personalised study help based on your notes.
+    </p>
+    <div style="position:relative;">
+      <textarea id="export-json-area" rows="10" readonly
+                style="width:100%; font-family:monospace; font-size:0.75rem; resize:vertical;"
+                class="form-control">Loading…</textarea>
+      <button onclick="copyExport()" class="btn btn-primary btn-sm"
+              style="position:absolute; top:0.5rem; right:0.5rem;">Copy</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function openExportModal() {
+    document.getElementById('export-modal').style.display = 'flex';
+    document.getElementById('export-modal').classList.add('open');
+    fetch('{{ url_for("notes.export_json") }}')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('export-json-area').value = JSON.stringify(data, null, 2);
+      });
+  }
+  function closeExportModal() {
+    document.getElementById('export-modal').style.display = 'none';
+    document.getElementById('export-modal').classList.remove('open');
+  }
+  function copyExport() {
+    const ta = document.getElementById('export-json-area');
+    ta.select();
+    document.execCommand('copy');
+    showToast({ title: 'Copied!', message: 'Paste into your AI assistant.', type: 'success' });
+  }
+  document.getElementById('export-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeExportModal();
+  });
+</script>
+{% endblock %}

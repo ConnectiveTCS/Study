@@ -1,0 +1,115 @@
+{% extends "auth/auth_base.html" %}
+{% block title %}Choose Your Theme – StudyForce{% endblock %}
+
+{% block auth_content %}
+<div class="auth-logo">
+  <div class="logo-emoji">🎨</div>
+  <h1>Make it yours</h1>
+  <p>Pick your colours and style.</p>
+</div>
+
+<div class="onboarding-steps" aria-label="Step 3 of 3">
+  <div class="step-dot done"></div>
+  <div class="step-dot done"></div>
+  <div class="step-dot active"></div>
+</div>
+
+<form method="POST" action="{{ url_for('auth.onboarding_step3') }}" novalidate id="theme-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <input type="hidden" name="mode" id="mode-input" value="dark" />
+  <input type="hidden" name="primary" id="primary-input" value="#6c63ff" />
+  <input type="hidden" name="accent" id="accent-input" value="#ff6584" />
+  <input type="hidden" name="background" id="background-input" value="#0d0d1a" />
+
+  <!-- Dark / Light toggle -->
+  <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+    <button type="button" id="btn-dark" class="btn btn-primary" style="flex:1;" onclick="setMode('dark')">🌙 Dark</button>
+    <button type="button" id="btn-light" class="btn btn-glass" style="flex:1;" onclick="setMode('light')">☀️ Light</button>
+  </div>
+
+  <!-- Colour pickers -->
+  <div style="display:flex; flex-direction:column; gap:0.85rem; margin-bottom:1.75rem;">
+
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <input type="color" id="pick-primary" value="#6c63ff"
+             style="width:42px; height:42px; border:none; border-radius:10px; cursor:pointer; flex-shrink:0;"
+             oninput="applyColor('--primary', this.value, 'primary-input')" />
+      <div>
+        <div style="font-size:0.875rem; font-weight:500;">Primary</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Buttons and highlights</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <input type="color" id="pick-accent" value="#ff6584"
+             style="width:42px; height:42px; border:none; border-radius:10px; cursor:pointer; flex-shrink:0;"
+             oninput="applyColor('--accent', this.value, 'accent-input')" />
+      <div>
+        <div style="font-size:0.875rem; font-weight:500;">Accent</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Badges and indicators</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <input type="color" id="pick-bg" value="#0d0d1a"
+             style="width:42px; height:42px; border:none; border-radius:10px; cursor:pointer; flex-shrink:0;"
+             oninput="applyColor('--bg', this.value, 'background-input')" />
+      <div>
+        <div style="font-size:0.875rem; font-weight:500;">Background</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Canvas colour</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preset palettes -->
+  <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Quick presets</p>
+  <div style="display:flex; gap:0.5rem; margin-bottom:1.75rem; flex-wrap:wrap;">
+    {% for preset in [
+      ('#6c63ff','#ff6584','#0d0d1a','Indigo Night'),
+      ('#43e97b','#38f9d7','#0a1a10','Emerald'),
+      ('#fa709a','#fee140','#1a0a0e','Sakura'),
+      ('#4facfe','#00f2fe','#020d18','Ocean'),
+      ('#667eea','#764ba2','#0e0818','Violet'),
+    ] %}
+    <button type="button" class="preset-palette" data-p="{{ preset[0] }}" data-a="{{ preset[1] }}" data-b="{{ preset[2] }}"
+            title="{{ preset[3] }}"
+            onclick="applyPreset('{{ preset[0] }}','{{ preset[1] }}','{{ preset[2] }}')"
+            style="width:36px; height:36px; border-radius:50%; border:2px solid transparent; cursor:pointer;
+                   background:linear-gradient(135deg,{{ preset[0] }},{{ preset[1] }}); transition:border-color 0.2s;"></button>
+    {% endfor %}
+  </div>
+
+  <button type="submit" class="btn btn-primary w-full">Finish setup 🎉</button>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function setMode(mode) {
+    document.getElementById('mode-input').value = mode;
+    document.documentElement.dataset.theme = mode;
+    document.getElementById('btn-dark').className  = mode === 'dark'  ? 'btn btn-primary' : 'btn btn-glass';
+    document.getElementById('btn-light').className = mode === 'light' ? 'btn btn-primary' : 'btn btn-glass';
+    // Update background default
+    if (mode === 'light') applyColor('--bg', '#f0f0f8', 'background-input');
+    else                  applyColor('--bg', '#0d0d1a', 'background-input');
+  }
+
+  function applyColor(cssVar, value, inputId) {
+    document.documentElement.style.setProperty(cssVar, value);
+    document.getElementById(inputId).value = value;
+    // Sync the colour picker handle too
+    const pickers = {'--primary':'pick-primary','--accent':'pick-accent','--bg':'pick-bg'};
+    if (pickers[cssVar]) document.getElementById(pickers[cssVar]).value = value;
+  }
+
+  function applyPreset(p, a, b) {
+    applyColor('--primary', p, 'primary-input');
+    applyColor('--accent',  a, 'accent-input');
+    applyColor('--bg',      b, 'background-input');
+    document.querySelectorAll('.preset-palette').forEach(el => {
+      el.style.borderColor = el.dataset.p === p ? 'white' : 'transparent';
+    });
+  }
+</script>
+{% endblock %}

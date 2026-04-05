@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}Planner – StudyForce{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" />
+<style>
+  #calendar-wrapper { border-radius:12px; overflow:hidden; background:var(--glass-bg); backdrop-filter:blur(10px); padding:1rem; }
+  .fc { font-family:inherit; }
+  .fc-toolbar-title { font-size:1.1rem !important; font-weight:600; }
+  .fc-button { background:var(--glass-bg) !important; border-color:rgba(255,255,255,0.15) !important; color:var(--text-primary) !important; border-radius:8px !important; font-size:0.8rem !important; }
+  .fc-button:hover { background:rgba(255,255,255,0.15) !important; }
+  .fc-button-active { background:var(--primary) !important; }
+  .fc-daygrid-day { background:transparent; }
+  .fc-daygrid-day-number { color:var(--text-muted); }
+  .fc-event { border-radius:4px; cursor:pointer; }
+  .fc-day-today { background:rgba(99,102,241,0.06) !important; }
+  /* Modal */
+  #event-modal { display:none; position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; }
+  #event-modal.open { display:flex; }
+  #event-modal-inner { background:var(--glass-bg); backdrop-filter:blur(16px); border-radius:16px; padding:1.5rem; min-width:320px; max-width:480px; width:100%; border:1px solid rgba(255,255,255,0.12); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">📅 Planner</h1>
+  <button class="btn btn-primary" onclick="openCreateModal()">+ Add event</button>
+</div>
+
+<div id="calendar-wrapper">
+  <div id="calendar"></div>
+</div>
+
+<!-- Event modal -->
+<div id="event-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div id="event-modal-inner">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 id="modal-title" style="font-size:1.1rem; font-weight:600;">Add event</h2>
+      <button class="btn btn-glass btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input class="form-control" id="ev-title" type="text" maxlength="128" placeholder="e.g. Study session" />
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+      <div class="form-group">
+        <label class="form-label">Start *</label>
+        <input class="form-control" id="ev-start" type="datetime-local" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">End</label>
+        <input class="form-control" id="ev-end" type="datetime-local" />
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-control" id="ev-type">
+          <option value="study">📚 Study</option>
+          <option value="exam">📝 Exam</option>
+          <option value="assignment">📋 Assignment</option>
+          <option value="revision">🔁 Revision</option>
+          <option value="break">☕ Break</option>
+          <option value="other">📌 Other</option>
+        </select>
+      </div>
+      {% if subjects %}
+      <div class="form-group">
+        <label class="form-label">Subject</label>
+        <select class="form-control" id="ev-subject">
+          <option value="">— None —</option>
+          {% for s in subjects %}<option value="{{ s.id }}">{{ s.icon }} {{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note</label>
+      <input class="form-control" id="ev-desc" type="text" maxlength="512" />
+    </div>
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+      <label class="form-label" style="margin:0;">Colour</label>
+      <input type="color" id="ev-color" value="#6366f1" style="width:2.5rem; height:2rem; border:none; background:none; cursor:pointer;" />
+      <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; margin-left:auto; cursor:pointer;">
+        <input type="checkbox" id="ev-allday" /> All-day
+      </label>
+    </div>
+    <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+      <button class="btn btn-glass" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" id="delete-ev-btn" style="display:none;" onclick="deleteEvent()">Delete</button>
+      <button class="btn btn-primary" onclick="saveEvent()">Save</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+let calendar, editingEventId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const calEl = document.getElementById('calendar');
+  calendar = new FullCalendar.Calendar(calEl, {
+    initialView: 'dayGridMonth',
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+    editable: true,
+    selectable: true,
+    height: 'auto',
+    events: '/planner/events',
+    select(info) {
+      openCreateModal(info.startStr, info.endStr, info.allDay);
+    },
+    eventClick(info) {
+      openEditModal(info.event);
+    },
+    eventDrop(info) {
+      patchEvent(info.event.id, {
+        start: info.event.startStr,
+        end: info.event.endStr || null,
+        allDay: info.event.allDay
+      });
+    },
+    eventResize(info) {
+      patchEvent(info.event.id, { start: info.event.startStr, end: info.event.endStr });
+    }
+  });
+  calendar.render();
+});
+
+function toLocalDatetimeInput(str) {
+  if (!str) return '';
+  const d = new Date(str);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function openCreateModal(start='', end='', allDay=false) {
+  editingEventId = null;
+  document.getElementById('modal-title').textContent = 'Add event';
+  document.getElementById('ev-title').value = '';
+  document.getElementById('ev-desc').value = '';
+  document.getElementById('ev-start').value = toLocalDatetimeInput(start);
+  document.getElementById('ev-end').value = toLocalDatetimeInput(end);
+  document.getElementById('ev-allday').checked = allDay;
+  document.getElementById('ev-color').value = '#6366f1';
+  document.getElementById('ev-type').value = 'study';
+  document.getElementById('delete-ev-btn').style.display = 'none';
+  document.getElementById('event-modal').classList.add('open');
+  document.getElementById('ev-title').focus();
+}
+
+function openEditModal(ev) {
+  editingEventId = ev.id;
+  document.getElementById('modal-title').textContent = 'Edit event';
+  document.getElementById('ev-title').value = ev.title || '';
+  document.getElementById('ev-desc').value = ev.extendedProps?.description || '';
+  document.getElementById('ev-start').value = toLocalDatetimeInput(ev.startStr);
+  document.getElementById('ev-end').value = toLocalDatetimeInput(ev.endStr);
+  document.getElementById('ev-allday').checked = ev.allDay;
+  document.getElementById('ev-color').value = ev.backgroundColor || '#6366f1';
+  document.getElementById('ev-type').value = ev.extendedProps?.event_type || 'study';
+  document.getElementById('delete-ev-btn').style.display = '';
+  document.getElementById('event-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('event-modal').classList.remove('open'); }
+
+async function saveEvent() {
+  const title = document.getElementById('ev-title').value.trim();
+  if (!title) { showToast('Title is required', 'error'); return; }
+  const start = document.getElementById('ev-start').value;
+  if (!start && !document.getElementById('ev-allday').checked) { showToast('Start time required', 'error'); return; }
+
+  const payload = {
+    title,
+    description: document.getElementById('ev-desc').value.trim(),
+    start: start || new Date().toISOString(),
+    end: document.getElementById('ev-end').value || null,
+    allDay: document.getElementById('ev-allday').checked,
+    color: document.getElementById('ev-color').value,
+    event_type: document.getElementById('ev-type').value,
+    subject_id: document.getElementById('ev-subject')?.value || null
+  };
+
+  if (editingEventId) {
+    await patchEvent(editingEventId, payload);
+  } else {
+    const resp = await fetch('/planner/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      calendar.refetchEvents();
+      showToast('Event created', 'success');
+    } else {
+      showToast(data.error || 'Failed', 'error');
+    }
+  }
+  closeModal();
+}
+
+async function patchEvent(id, payload) {
+  const resp = await fetch(`/planner/events/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify(payload)
+  });
+  const data = await resp.json();
+  if (data.ok) { calendar.refetchEvents(); }
+  else { showToast(data.error || 'Failed', 'error'); }
+}
+
+async function deleteEvent() {
+  if (!editingEventId || !confirm('Delete this event?')) return;
+  const resp = await fetch(`/planner/events/${editingEventId}`, {
+    method: 'DELETE', headers: { 'X-CSRFToken': CSRF }
+  });
+  const data = await resp.json();
+  if (data.ok) { calendar.refetchEvents(); closeModal(); showToast('Deleted', 'success'); }
+  else showToast(data.error || 'Failed', 'error');
+}
+
+// Close modal on backdrop click
+document.getElementById('event-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('event-modal')) closeModal();
+});
+</script>
+{% endblock %}

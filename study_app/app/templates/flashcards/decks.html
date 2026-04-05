@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Flashcard Decks – StudyForce{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">🃏 Flashcard Decks</h1>
+    <p class="page-subtitle">Spaced repetition powered by SM-2 algorithm.</p>
+  </div>
+  <a href="{{ url_for('flashcards.new_deck') }}" class="btn btn-primary">+ New Deck</a>
+</div>
+
+{% if decks %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem;">
+  {% for deck in decks %}
+  <div class="glass card-hover p-4" style="position:relative;">
+    {% if deck.subject %}
+    <span class="badge-chip" style="background:{{ deck.subject.color }}22; color:{{ deck.subject.color }}; margin-bottom:0.5rem; display:inline-block;">
+      {{ deck.subject.icon }} {{ deck.subject.name }}
+    </span>
+    {% endif %}
+    <h3 style="font-size:1rem; margin:0 0 0.25rem;">{{ deck.title }}</h3>
+    {% if deck.description %}
+    <p style="color:var(--text-muted); font-size:0.8rem; margin:0 0 0.75rem; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">{{ deck.description }}</p>
+    {% endif %}
+    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem; font-size:0.8rem; color:var(--text-muted);">
+      <span>📦 {{ deck.cards|length }} cards</span>
+      {% if deck.due_count > 0 %}
+      <span class="badge-chip" style="background:var(--accent)22; color:var(--accent);">{{ deck.due_count }} due</span>
+      {% endif %}
+      {% if deck.is_shared %}
+      <span class="badge-chip">🌐 Public</span>
+      {% endif %}
+    </div>
+    <div style="display:flex; gap:0.5rem;">
+      <a href="{{ url_for('flashcards.deck_detail', deck_id=deck.id) }}" class="btn btn-glass btn-sm" style="flex:1; text-align:center;">View</a>
+      {% if deck.due_count > 0 %}
+      <a href="{{ url_for('flashcards.study', deck_id=deck.id) }}" class="btn btn-primary btn-sm" style="flex:1; text-align:center;">Study →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state glass p-6">
+  <div class="empty-icon">🃏</div>
+  <h3 class="empty-title">No decks yet</h3>
+  <p class="empty-text">Create your first deck and start memorising!</p>
+  <a href="{{ url_for('flashcards.new_deck') }}" class="btn btn-primary">Create a deck</a>
+</div>
+{% endif %}
+{% endblock %}

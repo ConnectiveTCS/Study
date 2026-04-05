@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme.mode }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}StudyForce{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}" />
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 2.5rem;
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .auth-logo .logo-emoji { font-size: 3rem; }
+    .auth-logo h1 { font-size: 1.75rem; margin-top: 0.5rem; }
+    .auth-logo p  { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+    .auth-divider { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 1.25rem 0; }
+    .auth-footer  { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-muted); }
+    .onboarding-steps {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 1.5rem 0;
+    }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background var(--transition-fast), width var(--transition-fast);
+    }
+    .step-dot.active {
+      background: var(--accent);
+      width: 24px;
+      border-radius: 4px;
+    }
+    .step-dot.done { background: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card glass">
+      {% block auth_content %}{% endblock %}
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          {% for category, message in messages %}
+            showToast({ title: '{{ category|capitalize }}', message: '{{ message|e }}', type: '{{ "success" if category == "success" else "danger" if category == "error" else "info" }}' });
+          {% endfor %}
+        });
+      </script>
+    {% endif %}
+  {% endwith %}
+
+  <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

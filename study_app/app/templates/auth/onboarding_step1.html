@@ -1,0 +1,71 @@
+{% extends "auth/auth_base.html" %}
+{% block title %}Set Up Your Subjects – StudyForce{% endblock %}
+
+{% block auth_content %}
+<div class="auth-logo">
+  <div class="logo-emoji">📚</div>
+  <h1>What do you study?</h1>
+  <p>Add your subjects to personalise your dashboard.</p>
+</div>
+
+<div class="onboarding-steps" aria-label="Step 1 of 3">
+  <div class="step-dot active"></div>
+  <div class="step-dot"></div>
+  <div class="step-dot"></div>
+</div>
+
+<form method="POST" action="{{ url_for('auth.onboarding_step1') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+  <div id="subjects-container">
+    <div class="subject-row" style="display:flex; gap:0.6rem; align-items:center; margin-bottom:0.75rem;">
+      <input type="text" class="form-control" name="subject_name[]"
+             placeholder="e.g. Maths, Biology…" maxlength="64" required style="flex:1;" />
+      <input type="color" name="subject_color[]" value="#6c63ff"
+             title="Pick a colour"
+             style="width:38px; height:38px; border:none; border-radius:8px; cursor:pointer; background:none; padding:0;" />
+      <input type="text" name="subject_icon[]" value="📖"
+             maxlength="4" class="form-control"
+             placeholder="📖"
+             style="width:54px; text-align:center;" />
+      <button type="button" class="btn btn-glass" style="padding:0.4rem 0.6rem;" onclick="removeRow(this)" aria-label="Remove">✕</button>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-glass w-full" style="margin-bottom:1.25rem;" onclick="addRow()">
+    + Add another subject
+  </button>
+
+  <button type="submit" class="btn btn-primary w-full">Next →</button>
+</form>
+
+<div class="auth-footer">
+  <a href="{{ url_for('auth.onboarding_step2') }}" class="text-muted" style="font-size:0.8rem;">Skip for now</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function addRow() {
+    const tpl = `
+      <div class="subject-row" style="display:flex; gap:0.6rem; align-items:center; margin-bottom:0.75rem;">
+        <input type="text" class="form-control" name="subject_name[]"
+               placeholder="e.g. Chemistry…" maxlength="64" style="flex:1;" />
+        <input type="color" name="subject_color[]" value="#ff6584"
+               title="Pick a colour"
+               style="width:38px; height:38px; border:none; border-radius:8px; cursor:pointer; background:none; padding:0;" />
+        <input type="text" name="subject_icon[]" value="📖"
+               maxlength="4" class="form-control" placeholder="📖"
+               style="width:54px; text-align:center;" />
+        <button type="button" class="btn btn-glass" style="padding:0.4rem 0.6rem;" onclick="removeRow(this)" aria-label="Remove">✕</button>
+      </div>`;
+    document.getElementById('subjects-container').insertAdjacentHTML('beforeend', tpl);
+  }
+
+  function removeRow(btn) {
+    const rows = document.querySelectorAll('.subject-row');
+    if (rows.length <= 1) return; // keep at least one
+    btn.closest('.subject-row').remove();
+  }
+</script>
+{% endblock %}
