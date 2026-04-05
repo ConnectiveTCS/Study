@@ -45,6 +45,7 @@ class User(UserMixin, db.Model):
 
     @property
     def total_xp(self) -> int:
+        from .gamification import XPTransaction
         return db.session.query(
             db.func.coalesce(db.func.sum(XPTransaction.amount), 0)
         ).filter_by(user_id=self.id).scalar()

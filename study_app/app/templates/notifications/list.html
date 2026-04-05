@@ -2,7 +2,7 @@
 {% block title %}Notifications – StudyForce{% endblock %}
 {% block content %}
 <div class="page-header">
-  <h1 class="page-title">🔔 Notifications</h1>
+  <h1 class="page-title"><i data-lucide="bell"></i> Notifications</h1>
 </div>
 
 {% if notifications %}
@@ -10,11 +10,11 @@
   {% for n in notifications %}
   <div style="display:flex; gap:0.75rem; align-items:flex-start; padding:0.75rem 0; {% if not loop.last %}border-bottom:1px solid var(--border-color);{% endif %}">
     <div style="font-size:1.4rem; flex-shrink:0;">
-      {% if n.notification_type == 'badge_unlock' %}🎖
-      {% elif n.notification_type == 'group_invite' %}👥
-      {% elif n.notification_type == 'quiz_graded' %}📝
-      {% elif n.notification_type == 'study_reminder' %}⏰
-      {% else %}ℹ️{% endif %}
+      {% if n.notification_type == 'badge_unlock' %}<i data-lucide="award"></i>
+      {% elif n.notification_type == 'group_invite' %}<i data-lucide="users"></i>
+      {% elif n.notification_type == 'quiz_graded' %}<i data-lucide="file-pen-line"></i>
+      {% elif n.notification_type == 'study_reminder' %}<i data-lucide="alarm-clock"></i>
+      {% else %}<i data-lucide="info"></i>{% endif %}
     </div>
     <div style="flex:1;">
       <div style="font-size:0.9rem; {% if not n.is_read %}font-weight:600;{% endif %}">
@@ -36,7 +36,7 @@
 </div>
 {% else %}
 <div class="glass p-4" style="text-align:center;">
-  <div style="font-size:3rem; margin-bottom:0.5rem;">🔔</div>
+  <div style="font-size:3rem; margin-bottom:0.5rem;"><i data-lucide="bell"></i></div>
   <p style="color:var(--text-muted);">No notifications yet.</p>
 </div>
 {% endif %}

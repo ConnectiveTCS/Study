@@ -9,11 +9,19 @@
     if (collapsed) {
       sidebar.classList.add("collapsed");
       if (content) content.classList.add("sidebar-collapsed");
-      if (collapseIcon) collapseIcon.textContent = "▶";
+      if (collapseIcon) {
+        collapseIcon.innerHTML = '<i data-lucide="chevron-right"></i>';
+        if (window.lucide)
+          lucide.createIcons({ nodes: [collapseIcon.firstElementChild] });
+      }
     } else {
       sidebar.classList.remove("collapsed");
       if (content) content.classList.remove("sidebar-collapsed");
-      if (collapseIcon) collapseIcon.textContent = "◀";
+      if (collapseIcon) {
+        collapseIcon.innerHTML = '<i data-lucide="chevron-left"></i>';
+        if (window.lucide)
+          lucide.createIcons({ nodes: [collapseIcon.firstElementChild] });
+      }
     }
   }
 

@@ -2,8 +2,8 @@
 {% block title %}Leaderboard – StudyForce{% endblock %}
 {% block content %}
 <div class="page-header">
-  <h1 class="page-title">🏆 Leaderboard</h1>
-  <a href="{{ url_for('gamification.badges') }}" class="btn btn-glass">🎖 My Badges</a>
+  <h1 class="page-title"><i data-lucide="trophy"></i> Leaderboard</h1>
+  <a href="{{ url_for('gamification.badges') }}" class="btn btn-glass"><i data-lucide="award"></i> My Badges</a>
 </div>
 
 {% if user_rank %}
@@ -31,7 +31,7 @@
       {% set rank = loop.index %}
       <tr style="border-bottom:1px solid var(--border-color); {% if u.id == current_user.id %}background:rgba(99,102,241,0.07);{% endif %}">
         <td style="padding:0.5rem; font-size:1.1rem; text-align:center;">
-          {% if rank == 1 %}🥇{% elif rank == 2 %}🥈{% elif rank == 3 %}🥉{% else %}{{ rank }}{% endif %}
+          {% if rank == 1 %}<span style="color:gold;">1</span>{% elif rank == 2 %}<span style="color:silver;">2</span>{% elif rank == 3 %}<span style="color:#cd7f32;">3</span>{% else %}{{ rank }}{% endif %}
         </td>
         <td style="padding:0.5rem;">
           <span style="margin-right:0.5rem;">{{ u.avatar }}</span>

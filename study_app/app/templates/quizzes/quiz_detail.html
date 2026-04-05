@@ -13,14 +13,14 @@
       <p style="color:var(--text-muted); margin-bottom:1rem;">{{ quiz.description }}</p>
     {% endif %}
     <div style="display:flex; gap:1.5rem; font-size:0.85rem; flex-wrap:wrap; margin-bottom:1.5rem;">
-      <span>📋 {{ quiz.questions | length }} question{{ 's' if quiz.questions | length != 1 }}</span>
+      <span><i data-lucide="clipboard"></i> {{ quiz.questions | length }} question{{ 's' if quiz.questions | length != 1 }}</span>
       {% if quiz.time_limit_minutes %}
-        <span>⏱ {{ quiz.time_limit_minutes }} min</span>
+        <span><i data-lucide="timer"></i> {{ quiz.time_limit_minutes }} min</span>
       {% else %}
-        <span>⏱ No time limit</span>
+        <span><i data-lucide="timer"></i> No time limit</span>
       {% endif %}
-      {% if quiz.subject %}<span>📚 {{ quiz.subject.icon }} {{ quiz.subject.name }}</span>{% endif %}
-      {% if quiz.is_shared %}<span>🌐 Public</span>{% endif %}
+      {% if quiz.subject %}<span><i data-lucide="book-open"></i> {{ quiz.subject.icon }} {{ quiz.subject.name }}</span>{% endif %}
+      {% if quiz.is_shared %}<span><i data-lucide="globe"></i> Public</span>{% endif %}
     </div>
     <div style="display:flex; gap:0.5rem;">
       <a href="{{ url_for('quizzes.take_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Take quiz</a>

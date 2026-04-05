@@ -14,29 +14,29 @@
 
 {% block content %}
 <div class="page-header">
-  <h1 class="page-title">🍅 Pomodoro</h1>
+  <h1 class="page-title"><i data-lucide="timer"></i> Pomodoro</h1>
   <span id="sessions-done" style="font-size:0.85rem; color:var(--text-muted);">0 sessions today</span>
 </div>
 
 <!-- Mode selector -->
 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:0.75rem; margin-bottom:1.5rem;">
   <div class="glass mode-card p-3 active" data-mode="classic" data-work="25" data-break="5" onclick="selectMode(this)">
-    <div style="font-size:1.5rem; margin-bottom:0.25rem;">⏱</div>
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;"><i data-lucide="timer"></i></div>
     <div style="font-weight:600;">Classic</div>
     <div style="font-size:0.8rem; color:var(--text-muted);">25 / 5 min</div>
   </div>
   <div class="glass mode-card p-3" data-mode="deep" data-work="50" data-break="10" onclick="selectMode(this)">
-    <div style="font-size:1.5rem; margin-bottom:0.25rem;">🧠</div>
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;"><i data-lucide="brain"></i></div>
     <div style="font-weight:600;">Deep Work</div>
     <div style="font-size:0.8rem; color:var(--text-muted);">50 / 10 min</div>
   </div>
   <div class="glass mode-card p-3" data-mode="micro" data-work="15" data-break="3" onclick="selectMode(this)">
-    <div style="font-size:1.5rem; margin-bottom:0.25rem;">⚡</div>
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;"><i data-lucide="zap"></i></div>
     <div style="font-weight:600;">Micro</div>
     <div style="font-size:0.8rem; color:var(--text-muted);">15 / 3 min</div>
   </div>
   <div class="glass mode-card p-3" data-mode="custom" data-work="0" data-break="0" onclick="selectMode(this)">
-    <div style="font-size:1.5rem; margin-bottom:0.25rem;">⚙️</div>
+    <div style="font-size:1.5rem; margin-bottom:0.25rem;"><i data-lucide="settings"></i></div>
     <div style="font-weight:600;">Custom</div>
     <div id="custom-inputs" style="display:none; margin-top:0.5rem;">
       <input id="custom-work" type="number" min="1" max="180" value="30" class="form-control" style="margin-bottom:0.3rem;" placeholder="Work (min)" onclick="event.stopPropagation()" />
@@ -176,7 +176,7 @@ function phaseComplete() {
     sessionsDoneToday++;
     updateSessionDots();
     logSession();
-    notify('Work session complete! 🎉 Time for a break.');
+    notify('Work session complete! Time for a break.');
     isBreak = true;
     remaining = breakMin * 60;
     totalSeconds = remaining;
@@ -184,7 +184,7 @@ function phaseComplete() {
     document.getElementById('start-btn').textContent = 'Start break';
   } else {
     // Break done
-    notify('Break over! Ready to focus? 💪');
+    notify('Break over! Ready to focus?');
     isBreak = false;
     remaining = workMin * 60;
     totalSeconds = remaining;

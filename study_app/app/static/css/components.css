@@ -627,6 +627,43 @@ tbody td {
 
 /* ---- Utility classes ---- */
 
+/* ===================== Lucide Icon Sizing ===================== */
+svg[data-lucide] {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+.nav-icon svg[data-lucide],
+.mn-icon svg[data-lucide] {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+.logo-icon svg[data-lucide] {
+  width: 28px;
+  height: 28px;
+  vertical-align: middle;
+}
+.stat-icon svg[data-lucide] {
+  width: 2rem;
+  height: 2rem;
+}
+.empty-icon svg[data-lucide] {
+  width: 3rem;
+  height: 3rem;
+}
+.auth-logo .logo-emoji svg[data-lucide] {
+  width: 3rem;
+  height: 3rem;
+}
+
 /* Spacing */
 .p-3 {
   padding: 0.875rem;

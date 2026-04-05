@@ -3,7 +3,7 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title">📝 Quizzes</h1>
+    <h1 class="page-title"><i data-lucide="file-pen-line"></i> Quizzes</h1>
     <p class="page-subtitle">Test your knowledge with timed quizzes.</p>
   </div>
   <a href="{{ url_for('quizzes.new_quiz') }}" class="btn btn-primary">+ New Quiz</a>
@@ -20,9 +20,9 @@
     {% endif %}
     <h3 style="font-size:0.95rem; margin:0 0 0.25rem;">{{ quiz.title }}</h3>
     <div style="display:flex; gap:0.6rem; margin:0.5rem 0 0.75rem; font-size:0.8rem; color:var(--text-muted);">
-      <span>❓ {{ quiz.questions|length }} Qs</span>
-      {% if quiz.time_limit_seconds %}<span>⏱ {{ (quiz.time_limit_seconds // 60) }}m</span>{% endif %}
-      {% if quiz.is_shared %}<span class="badge-chip">🌐</span>{% endif %}
+      <span><i data-lucide="help-circle"></i> {{ quiz.questions|length }} Qs</span>
+      {% if quiz.time_limit_seconds %}<span><i data-lucide="timer"></i> {{ (quiz.time_limit_seconds // 60) }}m</span>{% endif %}
+      {% if quiz.is_shared %}<span class="badge-chip"><i data-lucide="globe"></i></span>{% endif %}
     </div>
     <div style="display:flex; gap:0.5rem;">
       <a href="{{ url_for('quizzes.quiz_detail', quiz_id=quiz.id) }}" class="btn btn-glass btn-sm" style="flex:1; text-align:center;">Manage</a>
@@ -33,7 +33,7 @@
 </div>
 {% else %}
 <div class="empty-state glass p-6">
-  <div class="empty-icon">📝</div>
+  <div class="empty-icon"><i data-lucide="file-pen-line"></i></div>
   <h3 class="empty-title">No quizzes yet</h3>
   <p class="empty-text">Build your first quiz with multiple choice, true/false, and short answer questions.</p>
   <a href="{{ url_for('quizzes.new_quiz') }}" class="btn btn-primary">Create quiz</a>

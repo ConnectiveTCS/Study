@@ -3,7 +3,7 @@
 
 {% block auth_content %}
 <div class="auth-logo">
-  <div class="logo-emoji">📚</div>
+  <div class="logo-emoji"><i data-lucide="book-open"></i></div>
   <h1>What do you study?</h1>
   <p>Add your subjects to personalise your dashboard.</p>
 </div>
@@ -28,7 +28,7 @@
              maxlength="4" class="form-control"
              placeholder="📖"
              style="width:54px; text-align:center;" />
-      <button type="button" class="btn btn-glass" style="padding:0.4rem 0.6rem;" onclick="removeRow(this)" aria-label="Remove">✕</button>
+      <button type="button" class="btn btn-glass" style="padding:0.4rem 0.6rem;" onclick="removeRow(this)" aria-label="Remove"><i data-lucide="x"></i></button>
     </div>
   </div>
 
@@ -57,7 +57,7 @@
         <input type="text" name="subject_icon[]" value="📖"
                maxlength="4" class="form-control" placeholder="📖"
                style="width:54px; text-align:center;" />
-        <button type="button" class="btn btn-glass" style="padding:0.4rem 0.6rem;" onclick="removeRow(this)" aria-label="Remove">✕</button>
+        <button type="button" class="btn btn-glass" style="padding:0.4rem 0.6rem;" onclick="removeRow(this)" aria-label="Remove">&times;</button>
       </div>`;
     document.getElementById('subjects-container').insertAdjacentHTML('beforeend', tpl);
   }

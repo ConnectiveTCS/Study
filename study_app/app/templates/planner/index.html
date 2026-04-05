@@ -22,7 +22,7 @@
 
 {% block content %}
 <div class="page-header">
-  <h1 class="page-title">📅 Planner</h1>
+  <h1 class="page-title"><i data-lucide="calendar"></i> Planner</h1>
   <button class="btn btn-primary" onclick="openCreateModal()">+ Add event</button>
 </div>
 
@@ -35,7 +35,7 @@
   <div id="event-modal-inner">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
       <h2 id="modal-title" style="font-size:1.1rem; font-weight:600;">Add event</h2>
-      <button class="btn btn-glass btn-sm" onclick="closeModal()">✕</button>
+      <button class="btn btn-glass btn-sm" onclick="closeModal()"><i data-lucide="x"></i></button>
     </div>
     <div class="form-group">
       <label class="form-label">Title *</label>
@@ -55,12 +55,12 @@
       <div class="form-group">
         <label class="form-label">Type</label>
         <select class="form-control" id="ev-type">
-          <option value="study">📚 Study</option>
-          <option value="exam">📝 Exam</option>
-          <option value="assignment">📋 Assignment</option>
-          <option value="revision">🔁 Revision</option>
-          <option value="break">☕ Break</option>
-          <option value="other">📌 Other</option>
+          <option value="study">Study</option>
+          <option value="exam">Exam</option>
+          <option value="assignment">Assignment</option>
+          <option value="revision">Revision</option>
+          <option value="break">Break</option>
+          <option value="other">Other</option>
         </select>
       </div>
       {% if subjects %}

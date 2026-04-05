@@ -49,12 +49,12 @@
     </select>
     {% endif %}
     <span class="save-indicator" id="save-indicator">Unsaved</span>
-    <button class="btn btn-primary btn-sm" onclick="saveNote()">💾 Save</button>
+    <button class="btn btn-primary btn-sm" onclick="saveNote()"><i data-lucide="save"></i> Save</button>
     {% if note %}
     <form method="POST" action="{{ url_for('notes.delete_note', note_id=note.id) }}"
           onsubmit="return confirm('Delete this note?')" style="margin:0;">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <button type="submit" class="btn btn-glass btn-sm" style="color:var(--danger);">🗑</button>
+      <button type="submit" class="btn btn-glass btn-sm" style="color:var(--danger);"><i data-lucide="trash-2"></i></button>
     </form>
     {% endif %}
   </div>

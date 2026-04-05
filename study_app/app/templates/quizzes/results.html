@@ -15,7 +15,7 @@
     {{ attempt.correct_count }} / {{ attempt.total_questions }} correct
   </div>
   <div style="font-size:0.85rem; color:var(--text-muted);">
-    {{ 'Great job! 🎉' if pct >= 70 else ('Keep practising 📖' if pct >= 40 else 'Review the material and try again 💪') }}
+    {{ 'Great job!' if pct >= 70 else ('Keep practising' if pct >= 40 else 'Review the material and try again') }}
   </div>
   <div style="margin-top:1rem; display:flex; gap:0.5rem; justify-content:center;">
     <a href="{{ url_for('quizzes.take_quiz', quiz_id=attempt.quiz_id) }}" class="btn btn-primary">Retry</a>
@@ -59,7 +59,7 @@
         </p>
         {% endif %}
       </div>
-      <span style="font-size:1.2rem; margin-left:1rem;">{{ '✅' if aa.is_correct else '❌' }}</span>
+      <span style="font-size:1.2rem; margin-left:1rem;">{{ '<i data-lucide="check-circle-2"></i>' | safe if aa.is_correct else '<i data-lucide="x-circle"></i>' | safe }}</span>
     </div>
   </div>
   {% endfor %}

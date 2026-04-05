@@ -7,11 +7,11 @@
  */
 (function () {
   const ICONS = {
-    success: "✅",
-    danger: "❌",
-    warning: "⚠️",
-    info: "ℹ️",
-    badge: "🏆",
+    success: '<i data-lucide="check-circle-2"></i>',
+    danger: '<i data-lucide="x-circle"></i>',
+    warning: '<i data-lucide="alert-triangle"></i>',
+    info: '<i data-lucide="info"></i>',
+    badge: '<i data-lucide="trophy"></i>',
   };
   const AUTO_DISMISS_MS = 4500;
 
@@ -38,6 +38,8 @@
     `;
 
     container.appendChild(toast);
+    if (window.lucide)
+      lucide.createIcons({ nodes: [toast.querySelector(".toast-icon")] });
 
     const dismiss = () => {
       toast.classList.add("removing");

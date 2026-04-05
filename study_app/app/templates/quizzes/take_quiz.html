@@ -14,7 +14,7 @@
 
 {% block content %}
 <div class="page-header">
-  <a href="{{ url_for('quizzes.quiz_detail', quiz_id=quiz.id) }}" class="btn btn-glass" id="exit-btn">✕ Exit</a>
+  <a href="{{ url_for('quizzes.quiz_detail', quiz_id=quiz.id) }}" class="btn btn-glass" id="exit-btn"><i data-lucide="x"></i> Exit</a>
   <h1 class="page-title">{{ quiz.title }}</h1>
   {% if quiz.time_limit_seconds %}
     <div id="timer-display">{{ quiz.time_limit_seconds // 60 }}:00</div>

@@ -2,10 +2,10 @@
 {% block title %}Badges – StudyForce{% endblock %}
 {% block content %}
 <div class="page-header">
-  <h1 class="page-title">🎖 Badges</h1>
+  <h1 class="page-title"><i data-lucide="award"></i> Badges</h1>
   <div style="display:flex; gap:0.5rem; align-items:center;">
     <span style="color:var(--text-muted); font-size:0.9rem;">{{ earned_ids | length }} / {{ all_badges | length }} earned</span>
-    <a href="{{ url_for('gamification.leaderboard') }}" class="btn btn-glass">🏆 Leaderboard</a>
+    <a href="{{ url_for('gamification.leaderboard') }}" class="btn btn-glass"><i data-lucide="trophy"></i> Leaderboard</a>
   </div>
 </div>
 
@@ -31,7 +31,7 @@
 </div>
 {% else %}
 <div class="glass p-4" style="text-align:center;">
-  <div style="font-size:3rem; margin-bottom:0.5rem;">🎖</div>
+  <div style="font-size:3rem; margin-bottom:0.5rem;"><i data-lucide="award"></i></div>
   <p style="color:var(--text-muted);">No badges configured yet.</p>
 </div>
 {% endif %}

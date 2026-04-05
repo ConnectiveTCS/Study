@@ -17,9 +17,13 @@
 
   function applyThemeMode(mode) {
     root.setAttribute("data-theme", mode);
-    const icon = document.getElementById("theme-icon");
+    const wrapper = document.getElementById("theme-icon");
     const label = document.getElementById("theme-label");
-    if (icon) icon.textContent = mode === "dark" ? "☀️" : "🌙";
+    if (wrapper) {
+      wrapper.innerHTML = `<i data-lucide="${mode === "dark" ? "sun" : "moon"}"></i>`;
+      if (window.lucide)
+        lucide.createIcons({ nodes: [wrapper.firstElementChild] });
+    }
     if (label) label.textContent = mode === "dark" ? "Light Mode" : "Dark Mode";
   }
 

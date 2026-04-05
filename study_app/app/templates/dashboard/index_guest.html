@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title">Welcome to StudyForce 🎓</h1>
+    <h1 class="page-title"><i data-lucide="graduation-cap"></i> Welcome to StudyForce</h1>
     <p class="page-subtitle">Your study data is saved locally. Create an account to sync across devices.</p>
   </div>
   <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Create free account</a>
@@ -13,7 +13,7 @@
 <!-- Stats row for guest -->
 <div class="stats-grid">
   <div class="stat-card glass">
-    <div class="stat-icon">🃏</div>
+    <div class="stat-icon"><i data-lucide="layers"></i></div>
     <div class="stat-value">{{ total_due }}</div>
     <div class="stat-label">Cards due</div>
   </div>
@@ -23,20 +23,34 @@
 <div class="glass p-4" style="margin-top:1.5rem;">
   <h3 style="font-size:0.95rem; font-weight:600; margin-bottom:1rem;">Get started</h3>
   <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem;">
-    {% for icon, label, url_name in [
-      ('🃏','Flashcards','flashcards.decks'),
-      ('📝','Quizzes','quizzes.list'),
-      ('📓','Notes','notes.list'),
-      ('🗓️','Planner','planner.index'),
-      ('🍅','Pomodoro','pomodoro.index'),
-      ('🧩','Mind Maps','mindmaps.list_maps'),
-      ('📄','PDFs','pdfs.list_pdfs'),
-    ] %}
-    <a href="{{ url_for(url_name) }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
-      <div style="font-size:2rem;">{{ icon }}</div>
-      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">{{ label }}</div>
+    <a href="{{ url_for('flashcards.decks') }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;"><i data-lucide="layers"></i></div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">Flashcards</div>
     </a>
-    {% endfor %}
+    <a href="{{ url_for('quizzes.list') }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;"><i data-lucide="file-pen-line"></i></div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">Quizzes</div>
+    </a>
+    <a href="{{ url_for('notes.list') }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;"><i data-lucide="notebook-pen"></i></div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">Notes</div>
+    </a>
+    <a href="{{ url_for('planner.index') }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;"><i data-lucide="calendar"></i></div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">Planner</div>
+    </a>
+    <a href="{{ url_for('pomodoro.index') }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;"><i data-lucide="timer"></i></div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">Pomodoro</div>
+    </a>
+    <a href="{{ url_for('mindmaps.list_maps') }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;"><i data-lucide="map"></i></div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">Mind Maps</div>
+    </a>
+    <a href="{{ url_for('pdfs.list_pdfs') }}" class="glass card-hover p-4" style="text-decoration:none; text-align:center;">
+      <div style="font-size:2rem;"><i data-lucide="file-text"></i></div>
+      <div style="font-size:0.85rem; font-weight:500; margin-top:0.4rem;">PDFs</div>
+    </a>
   </div>
 </div>
 

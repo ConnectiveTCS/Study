@@ -3,7 +3,7 @@
 
 {% block auth_content %}
 <div class="auth-logo">
-  <div class="logo-emoji">🎨</div>
+  <div class="logo-emoji"><i data-lucide="palette"></i></div>
   <h1>Make it yours</h1>
   <p>Pick your colours and style.</p>
 </div>
@@ -23,8 +23,8 @@
 
   <!-- Dark / Light toggle -->
   <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
-    <button type="button" id="btn-dark" class="btn btn-primary" style="flex:1;" onclick="setMode('dark')">🌙 Dark</button>
-    <button type="button" id="btn-light" class="btn btn-glass" style="flex:1;" onclick="setMode('light')">☀️ Light</button>
+    <button type="button" id="btn-dark" class="btn btn-primary" style="flex:1;" onclick="setMode('dark')"><i data-lucide="moon"></i> Dark</button>
+    <button type="button" id="btn-light" class="btn btn-glass" style="flex:1;" onclick="setMode('light')"><i data-lucide="sun"></i> Light</button>
   </div>
 
   <!-- Colour pickers -->
@@ -79,7 +79,7 @@
     {% endfor %}
   </div>
 
-  <button type="submit" class="btn btn-primary w-full">Finish setup 🎉</button>
+  <button type="submit" class="btn btn-primary w-full">Finish setup <i data-lucide="sparkles"></i></button>
 </form>
 {% endblock %}
 

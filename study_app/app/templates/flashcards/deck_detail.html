@@ -5,7 +5,7 @@
 <div class="page-header">
   <div>
     <a href="{{ url_for('flashcards.decks') }}" style="color:var(--text-muted); text-decoration:none; font-size:0.85rem;">← Decks</a>
-    <h1 class="page-title" style="margin-top:0.25rem;">🃏 {{ deck.title }}</h1>
+    <h1 class="page-title" style="margin-top:0.25rem;"><i data-lucide="layers"></i> {{ deck.title }}</h1>
     {% if deck.description %}
     <p class="page-subtitle">{{ deck.description }}</p>
     {% endif %}
@@ -18,13 +18,13 @@
     <form method="POST" action="{{ url_for('flashcards.toggle_public', deck_id=deck.id) }}" style="display:inline;">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <button type="submit" class="btn btn-glass" title="{{ 'Make private' if deck.is_shared else 'Make public' }}">
-        {{ '🌐 Public' if deck.is_shared else '🔒 Private' }}
+        {{ '<i data-lucide="globe"></i> Public' | safe if deck.is_shared else '<i data-lucide="lock"></i> Private' | safe }}
       </button>
     </form>
     <form method="POST" action="{{ url_for('flashcards.delete_deck', deck_id=deck.id) }}"
           onsubmit="return confirm('Delete this deck and all its cards?')">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <button type="submit" class="btn btn-glass" style="color:var(--danger);">🗑 Delete</button>
+      <button type="submit" class="btn btn-glass" style="color:var(--danger);"><i data-lucide="trash-2"></i> Delete</button>
     </form>
   </div>
   {% endif %}
@@ -70,10 +70,10 @@
     </div>
     {% if not readonly %}
     <div style="display:flex; flex-direction:column; gap:0.3rem; align-items:flex-end;">
-      <button class="btn btn-glass btn-sm" onclick="openEditModal({{ card.id }}, {{ card.front|tojson }}, {{ card.back|tojson }}, {{ (card.tags or [])|tojson }})">✏️</button>
+      <button class="btn btn-glass btn-sm" onclick="openEditModal({{ card.id }}, {{ card.front|tojson }}, {{ card.back|tojson }}, {{ (card.tags or [])|tojson }})"><i data-lucide="pencil"></i></button>
       <form method="POST" action="{{ url_for('flashcards.delete_card', deck_id=deck.id, card_id=card.id) }}" onsubmit="return confirm('Delete this card?')">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <button type="submit" class="btn btn-glass btn-sm" style="color:var(--danger);">🗑</button>
+        <button type="submit" class="btn btn-glass btn-sm" style="color:var(--danger);"><i data-lucide="trash-2"></i></button>
       </form>
     </div>
     {% endif %}
@@ -112,7 +112,7 @@
 
 {% else %}
 <div class="empty-state glass p-6">
-  <div class="empty-icon">🃏</div>
+  <div class="empty-icon"><i data-lucide="layers"></i></div>
   <p class="empty-text">No cards yet. Add your first one above!</p>
 </div>
 {% endif %}

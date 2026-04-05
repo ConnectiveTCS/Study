@@ -3,7 +3,7 @@
 
 {% block auth_content %}
 <div class="auth-logo">
-  <div class="logo-emoji">✨</div>
+  <div class="logo-emoji"><i data-lucide="sparkles"></i></div>
   <h1>Start studying smarter</h1>
   <p>Free account — syncs all your data</p>
 </div>
@@ -54,7 +54,7 @@
         minlength="8"
         aria-describedby="pw-strength-hint"
       />
-      <button type="button" class="input-addon" onclick="togglePw('password')" aria-label="Toggle password visibility">👁</button>
+      <button type="button" class="input-addon" onclick="togglePw('password')" aria-label="Toggle password visibility"><i data-lucide="eye"></i></button>
     </div>
     <div id="pw-strength-hint" style="margin-top:0.4rem; height:4px; border-radius:2px; background:var(--border); overflow:hidden;">
       <div id="pw-strength-bar" style="height:100%; width:0; transition:width 0.3s, background 0.3s;"></div>

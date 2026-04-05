@@ -4,11 +4,11 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title">📓 Notes</h1>
+    <h1 class="page-title"><i data-lucide="notebook-pen"></i> Notes</h1>
     <p class="page-subtitle">Rich text notes with AI export.</p>
   </div>
   <div style="display:flex; gap:0.5rem;">
-    <button class="btn btn-glass" onclick="openExportModal()">🤖 Export to AI</button>
+    <button class="btn btn-glass" onclick="openExportModal()"><i data-lucide="bot"></i> Export to AI</button>
     <a href="{{ url_for('notes.new_note') }}" class="btn btn-primary">+ New Note</a>
   </div>
 </div>
@@ -35,7 +35,7 @@
 </div>
 {% else %}
 <div class="empty-state glass p-6">
-  <div class="empty-icon">📓</div>
+  <div class="empty-icon"><i data-lucide="notebook-pen"></i></div>
   <h3 class="empty-title">No notes yet</h3>
   <p class="empty-text">Write your first note with the rich text editor.</p>
   <a href="{{ url_for('notes.new_note') }}" class="btn btn-primary">Create a note</a>
@@ -46,8 +46,8 @@
 <div id="export-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="export-modal-title" style="display:none;">
   <div class="modal glass" style="max-width:600px; width:100%;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-      <h3 id="export-modal-title" style="margin:0;">🤖 Export Notes to AI</h3>
-      <button onclick="closeExportModal()" class="btn btn-glass btn-sm">✕</button>
+      <h3 id="export-modal-title" style="margin:0;"><i data-lucide="bot"></i> Export Notes to AI</h3>
+      <button onclick="closeExportModal()" class="btn btn-glass btn-sm"><i data-lucide="x"></i></button>
     </div>
     <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">
       Copy this JSON into any AI assistant (ChatGPT, Claude, Gemini, etc.) to get personalised study help based on your notes.

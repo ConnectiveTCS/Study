@@ -16,6 +16,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
+  <!-- Icons -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+
   <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}" />
@@ -41,7 +44,7 @@
 <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
   <!-- Logo -->
   <div class="sidebar-logo" onclick="toggleSidebar()" title="Toggle sidebar" tabindex="0" role="button" aria-label="Toggle sidebar" onkeydown="if(event.key==='Enter')toggleSidebar()">
-    <span class="logo-icon" aria-hidden="true">🧠</span>
+    <span class="logo-icon" aria-hidden="true"><i data-lucide="brain"></i></span>
     <span class="logo-text">StudyForce</span>
   </div>
 
@@ -53,7 +56,7 @@
      data-tooltip="Dashboard"
      aria-label="Dashboard"
      aria-current="{% if request.endpoint == 'dashboard.index' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">🏠</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="house"></i></span>
     <span class="nav-label">Dashboard</span>
   </a>
 
@@ -62,7 +65,7 @@
      data-tooltip="Flashcards"
      aria-label="Flashcards"
      aria-current="{% if request.blueprint == 'flashcards' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">🃏</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="layers"></i></span>
     <span class="nav-label">Flashcards</span>
   </a>
 
@@ -71,7 +74,7 @@
      data-tooltip="Quizzes"
      aria-label="Quizzes"
      aria-current="{% if request.blueprint == 'quizzes' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">📝</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="file-pen-line"></i></span>
     <span class="nav-label">Quizzes</span>
   </a>
 
@@ -80,7 +83,7 @@
      data-tooltip="Notes"
      aria-label="Notes"
      aria-current="{% if request.blueprint == 'notes' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">📓</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="notebook-pen"></i></span>
     <span class="nav-label">Notes</span>
   </a>
 
@@ -92,7 +95,7 @@
      data-tooltip="Planner"
      aria-label="Planner"
      aria-current="{% if request.blueprint == 'planner' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">📅</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="calendar"></i></span>
     <span class="nav-label">Planner</span>
   </a>
 
@@ -101,7 +104,7 @@
      data-tooltip="Pomodoro"
      aria-label="Pomodoro"
      aria-current="{% if request.blueprint == 'pomodoro' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">🍅</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="timer"></i></span>
     <span class="nav-label">Pomodoro</span>
   </a>
 
@@ -110,7 +113,7 @@
      data-tooltip="Mind Maps"
      aria-label="Mind Maps"
      aria-current="{% if request.blueprint == 'mindmaps' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">🗺️</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="map"></i></span>
     <span class="nav-label">Mind Maps</span>
   </a>
 
@@ -119,7 +122,7 @@
      data-tooltip="PDFs"
      aria-label="PDFs"
      aria-current="{% if request.blueprint == 'pdfs' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">📄</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="file-text"></i></span>
     <span class="nav-label">PDFs</span>
   </a>
 
@@ -131,7 +134,7 @@
      data-tooltip="Study Groups"
      aria-label="Study Groups"
      aria-current="{% if request.blueprint == 'groups' %}page{% endif %}">
-    <span class="nav-icon" aria-hidden="true">👥</span>
+    <span class="nav-icon" aria-hidden="true"><i data-lucide="users"></i></span>
     <span class="nav-label">Study Groups</span>
   </a>
 
@@ -140,7 +143,7 @@
     <a href="{{ url_for('notifications.list_notifications') }}"
        class="sidebar-link {% if request.blueprint == 'notifications' %}active{% endif %}"
        data-tooltip="Notifications" aria-label="Notifications">
-      <span class="nav-icon" aria-hidden="true">🔔</span>
+      <span class="nav-icon" aria-hidden="true"><i data-lucide="bell"></i></span>
       <span class="nav-label">
         Notifications
         {% if unread_notification_count > 0 %}
@@ -154,28 +157,28 @@
       <span class="user-avatar" aria-hidden="true">{{ current_user.avatar }}</span>
       <div class="user-info">
         <div class="user-name">{{ current_user.display_name }}</div>
-        <div class="user-xp">⭐ {{ current_user.total_xp }} XP</div>
+        <div class="user-xp"><i data-lucide="star"></i> {{ current_user.total_xp }} XP</div>
       </div>
     </a>
     <a href="{{ url_for('auth.logout') }}" class="sidebar-link" data-tooltip="Logout" aria-label="Logout">
-      <span class="nav-icon" aria-hidden="true">🚪</span>
+      <span class="nav-icon" aria-hidden="true"><i data-lucide="log-out"></i></span>
       <span class="nav-label">Logout</span>
     </a>
     {% else %}
     <a href="{{ url_for('auth.login') }}" class="sidebar-link" data-tooltip="Sign in">
-      <span class="nav-icon" aria-hidden="true">🔑</span>
+      <span class="nav-icon" aria-hidden="true"><i data-lucide="log-in"></i></span>
       <span class="nav-label">Sign In</span>
     </a>
     {% endif %}
 
     <!-- Theme toggle -->
     <button class="sidebar-link btn-ghost" onclick="toggleTheme()" style="cursor:pointer;border:none;text-align:left;" aria-label="Toggle dark/light mode" data-tooltip="Toggle theme">
-      <span class="nav-icon" aria-hidden="true" id="theme-icon">{{ '☀️' if theme.mode == 'dark' else '🌙' }}</span>
+      <span class="nav-icon" aria-hidden="true" id="theme-icon"><i data-lucide="{{ 'sun' if theme.mode == 'dark' else 'moon' }}"></i></span>
       <span class="nav-label" id="theme-label">{{ 'Light Mode' if theme.mode == 'dark' else 'Dark Mode' }}</span>
     </button>
 
     <button class="sidebar-collapse-btn" onclick="toggleSidebar()" aria-label="Collapse sidebar" data-tooltip="Collapse">
-      <span id="collapse-icon">◀</span>
+      <span id="collapse-icon"><i data-lucide="chevron-left"></i></span>
     </button>
   </div>
 </aside>
@@ -185,19 +188,19 @@
 <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
   <div class="mobile-nav-items">
     <a href="{{ url_for('dashboard.index') }}" class="mobile-nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}" aria-label="Dashboard" aria-current="{% if request.endpoint == 'dashboard.index' %}page{% endif %}">
-      <span class="mn-icon" aria-hidden="true">🏠</span><span>Home</span>
+      <span class="mn-icon" aria-hidden="true"><i data-lucide="house"></i></span><span>Home</span>
     </a>
     <a href="{{ url_for('flashcards.decks') }}" class="mobile-nav-item {% if request.blueprint == 'flashcards' %}active{% endif %}" aria-label="Flashcards" aria-current="{% if request.blueprint == 'flashcards' %}page{% endif %}">
-      <span class="mn-icon" aria-hidden="true">🃏</span><span>Cards</span>
+      <span class="mn-icon" aria-hidden="true"><i data-lucide="layers"></i></span><span>Cards</span>
     </a>
     <a href="{{ url_for('notes.list') }}" class="mobile-nav-item {% if request.blueprint == 'notes' %}active{% endif %}" aria-label="Notes" aria-current="{% if request.blueprint == 'notes' %}page{% endif %}">
-      <span class="mn-icon" aria-hidden="true">📓</span><span>Notes</span>
+      <span class="mn-icon" aria-hidden="true"><i data-lucide="notebook-pen"></i></span><span>Notes</span>
     </a>
     <a href="{{ url_for('planner.index') }}" class="mobile-nav-item {% if request.blueprint == 'planner' %}active{% endif %}" aria-label="Planner" aria-current="{% if request.blueprint == 'planner' %}page{% endif %}">
-      <span class="mn-icon" aria-hidden="true">📅</span><span>Plan</span>
+      <span class="mn-icon" aria-hidden="true"><i data-lucide="calendar"></i></span><span>Plan</span>
     </a>
     <a href="{{ url_for('pomodoro.index') }}" class="mobile-nav-item {% if request.blueprint == 'pomodoro' %}active{% endif %}" aria-label="Pomodoro" aria-current="{% if request.blueprint == 'pomodoro' %}page{% endif %}">
-      <span class="mn-icon" aria-hidden="true">🍅</span><span>Focus</span>
+      <span class="mn-icon" aria-hidden="true"><i data-lucide="timer"></i></span><span>Focus</span>
     </a>
   </div>
 </nav>
@@ -230,6 +233,9 @@
 <script src="{{ url_for('static', filename='js/notifications.js') }}" defer></script>
 
 {% block extra_js %}{% endblock %}
+
+<!-- Init icons -->
+<script>lucide.createIcons();</script>
 
 <!-- Register service worker -->
 <script>

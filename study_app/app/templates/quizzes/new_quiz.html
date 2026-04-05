@@ -76,12 +76,12 @@
           <div class="option-row" id="opt-row-${i}-0">
             <input type="radio" name="q_correct[${i}]" value="0" id="opt-radio-${i}-0" required />
             <input type="text" class="form-control" name="q_opts_${i}[]" placeholder="Option A" style="flex:1;" />
-            <button type="button" class="btn btn-glass btn-sm" onclick="removeOpt(this)">✕</button>
+            <button type="button" class="btn btn-glass btn-sm" onclick="removeOpt(this)">&times;</button>
           </div>
           <div class="option-row" id="opt-row-${i}-1">
             <input type="radio" name="q_correct[${i}]" value="1" id="opt-radio-${i}-1" />
             <input type="text" class="form-control" name="q_opts_${i}[]" placeholder="Option B" style="flex:1;" />
-            <button type="button" class="btn btn-glass btn-sm" onclick="removeOpt(this)">✕</button>
+            <button type="button" class="btn btn-glass btn-sm" onclick="removeOpt(this)">&times;</button>
           </div>
         </div>
         <button type="button" class="btn btn-glass btn-sm" style="margin-top:0.4rem;" onclick="addOpt(${i})">+ Add option</button>`;
@@ -126,7 +126,7 @@
     row.innerHTML = `
       <input type="radio" name="q_correct[${qi}]" value="${idx}" />
       <input type="text" class="form-control" name="q_opts_${qi}[]" placeholder="Option…" style="flex:1;" />
-      <button type="button" class="btn btn-glass btn-sm" onclick="removeOpt(this)">✕</button>`;
+      <button type="button" class="btn btn-glass btn-sm" onclick="removeOpt(this)">&times;</button>`;
     container.appendChild(row);
   }
 
