@@ -16,9 +16,9 @@ def inject_globals() -> dict:
     """Inject user, theme prefs, and unread notification count into all templates."""
     theme = {
         "mode": "dark",
-        "primary": "#7c3aed",
-        "accent": "#a78bfa",
-        "background": "#0f0a1e",
+        "primary": "#d4a853",
+        "accent": "#f0c97a",
+        "background": "#0c0b09",
     }
     unread_count = 0
 

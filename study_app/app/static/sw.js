@@ -1,11 +1,14 @@
-const CACHE_NAME = "studyforce-v1";
+const CACHE_NAME = "studyforce-v2";
 
 const PRECACHE_URLS = [
   "/",
-  "/static/css/main.css",
-  "/static/js/flashcard.js",
-  "/static/js/quill-init.js",
-  "/offline",
+  "/static/css/base.css",
+  "/static/css/components.css",
+  "/static/css/sidebar.css",
+  "/static/js/theme.js",
+  "/static/js/sidebar.js",
+  "/static/js/toast.js",
+  "/static/icons/icon-192.png",
 ];
 
 // Install: precache core assets
@@ -68,7 +71,9 @@ async function networkFirstWithFallback(request) {
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-    const offline = await caches.match("/offline");
-    return offline || new Response("You are offline.", { status: 503 });
+    return new Response("You are offline.", {
+      status: 503,
+      headers: { "Content-Type": "text/plain" },
+    });
   }
 }

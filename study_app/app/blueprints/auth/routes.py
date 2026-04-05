@@ -188,9 +188,9 @@ def onboarding_step3():
     """Step 3: Choose theme."""
     if request.method == "POST":
         mode       = request.form.get("mode", "dark")
-        primary    = request.form.get("primary", "#7c3aed")
-        accent     = request.form.get("accent", "#a78bfa")
-        background = request.form.get("background", "#0f0a1e")
+        primary    = request.form.get("primary", "#d4a853")
+        accent     = request.form.get("accent", "#f0c97a")
+        background = request.form.get("background", "#0c0b09")
 
         current_user.theme_prefs = {
             "mode": mode,

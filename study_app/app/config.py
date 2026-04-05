@@ -29,7 +29,7 @@ class Config:
     VAPID_CLAIM_EMAIL = os.environ.get("VAPID_CLAIM_EMAIL", "mailto:admin@example.com")
 
     # Rate limiting
-    RATELIMIT_DEFAULT = "200 per day;50 per hour"
+    RATELIMIT_DEFAULT = "9999 per day;999 per hour"
     RATELIMIT_STORAGE_URL = "memory://"
 
     # Anonymous session cookie name

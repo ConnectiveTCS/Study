@@ -14,9 +14,9 @@ class User(UserMixin, db.Model):
     avatar = db.Column(db.String(10), default="🎓")  # emoji avatar
     theme_prefs = db.Column(db.JSON, default=lambda: {
         "mode": "dark",
-        "primary": "#7c3aed",
-        "accent": "#a78bfa",
-        "background": "#0f0a1e",
+        "primary": "#d4a853",
+        "accent": "#f0c97a",
+        "background": "#0c0b09",
     })
     onboarding_complete = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

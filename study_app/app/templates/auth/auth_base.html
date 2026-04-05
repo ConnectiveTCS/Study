@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}StudyForce{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}" />
   <style>
@@ -26,7 +27,7 @@
       margin-bottom: 2rem;
     }
     .auth-logo .logo-emoji { font-size: 3rem; }
-    .auth-logo h1 { font-size: 1.75rem; margin-top: 0.5rem; }
+    .auth-logo h1 { font-family: var(--font-display); font-size: 1.75rem; margin-top: 0.5rem; color: var(--primary); }
     .auth-logo p  { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
     .auth-divider { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 1.25rem 0; }
     .auth-footer  { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-muted); }
@@ -43,11 +44,11 @@
       transition: background var(--transition-fast), width var(--transition-fast);
     }
     .step-dot.active {
-      background: var(--accent);
+      background: var(--primary);
       width: 24px;
       border-radius: 4px;
     }
-    .step-dot.done { background: var(--primary); }
+    .step-dot.done { background: var(--accent); }
   </style>
 </head>
 <body>

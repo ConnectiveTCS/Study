@@ -13,9 +13,9 @@
   flex-direction: column;
   padding: 1.5rem 1rem;
   gap: 0.5rem;
-  background: rgba(15, 10, 30, 0.7);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(12, 11, 9, 0.88);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
   border-right: 1px solid var(--border);
   transition:
     width var(--transition-mid),
@@ -45,12 +45,14 @@
 }
 
 .sidebar-logo .logo-text {
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--primary);
   white-space: nowrap;
   overflow: hidden;
   transition: opacity var(--transition-fast);
+  letter-spacing: 0.01em;
 }
 
 .sidebar.collapsed .logo-text {
@@ -60,11 +62,11 @@
 
 /* Nav groups */
 .sidebar-section-label {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--primary) 55%, transparent);
   padding: 0.75rem 0.5rem 0.25rem;
   white-space: nowrap;
   overflow: hidden;
@@ -100,13 +102,10 @@
 }
 
 .sidebar-link.active {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--primary) 40%, transparent),
-    color-mix(in srgb, var(--accent) 20%, transparent)
-  );
-  color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border: none;
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .sidebar-link .nav-icon {
@@ -236,7 +235,7 @@
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(15, 10, 30, 0.9);
+  background: rgba(12, 11, 9, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border);
